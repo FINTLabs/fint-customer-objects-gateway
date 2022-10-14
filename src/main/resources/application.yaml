@@ -1,6 +1,14 @@
+fint:
+  application-id: fint-customer-gateway
+server:
+  max-http-header-size: 40KB
+  error:
+    include-message: always
 spring:
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://idp.felleskomponent.no/nidp/oauth/nam
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  profiles:
+    include:
+      - kafka
+      - resource-server

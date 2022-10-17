@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.support.LdapNameBuilder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,7 +28,7 @@ public class ComponentService {
     @Autowired
     private ComponentObjectService componentObjectService;
 
-//    @Autowired
+    @Autowired
     private OrganisationService organisationService;
 
     @Autowired
@@ -37,13 +38,14 @@ public class ComponentService {
     private String componentBase;
 
 
-    @Autowired
-    public void setOrganisationService(OrganisationService organisationService) {
-        this.organisationService = organisationService;
+    @PostConstruct
+    public void init() {
+        organisationService.setComponentService(this);
     }
 
-    public OrganisationService getOrganisationService() {
-        return this.organisationService;
+
+    public void setOrganisationService(OrganisationService organisationService) {
+        this.organisationService = organisationService;
     }
 
     public boolean createComponent(Component component) {

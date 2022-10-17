@@ -49,7 +49,6 @@ public class OrganisationService {
     @Autowired
     private ClientService clientService;
 
-//    @Autowired
     private ComponentService componentService;
 
     @Autowired
@@ -58,13 +57,8 @@ public class OrganisationService {
     @Value("${fint.ldap.organisation-base}")
     private String organisationBase;
 
-    @Autowired
     public void setComponentService(ComponentService componentService) {
         this.componentService = componentService;
-    }
-
-    public ComponentService getComponentService() {
-        return this.componentService;
     }
 
     public boolean createOrganisation(Organisation organisation) {

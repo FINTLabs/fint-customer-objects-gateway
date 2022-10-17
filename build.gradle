@@ -44,6 +44,10 @@ dependencies {
     implementation 'org.apache.commons:commons-pool2:2.9.0'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
 
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'no.fintlabs:fint-kafka:2.3.0'
+    implementation 'no.fintlabs:fint-flyt-kafka:2.0.0'
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'

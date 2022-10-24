@@ -1,6 +1,9 @@
 package no.fintlabs.portal.model.organisation;
 
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import no.fintlabs.portal.exceptions.EntityNotFoundException;
+import no.fintlabs.portal.exceptions.InvalidResourceException;
 import no.fintlabs.portal.exceptions.UpdateEntityException;
 import no.fintlabs.portal.ldap.Container;
 import no.fintlabs.portal.ldap.LdapService;
@@ -109,6 +112,16 @@ public class OrganisationService {
 
         return oranisation;
 
+    }
+
+    @Synchronized
+    public Organisation getOrganisationSync(String orgName) {
+        Organisation organisation = getOrganisation(orgName)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Organisation " + orgName + " not found")
+                );
+        if (organisation.getName() == null) throw new InvalidResourceException("Invalid organisation");
+        return organisation;
     }
 
     public Optional<Organisation> getOrganisationByDn(String dn) {

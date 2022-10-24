@@ -2,7 +2,7 @@ package no.fintlabs.portal.model.client;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.ToString;
+import lombok.*;
 import no.fintlabs.portal.ldap.BasicLdapEntry;
 import org.springframework.ldap.odm.annotations.Attribute;
 import org.springframework.ldap.odm.annotations.Entry;
@@ -13,6 +13,7 @@ import javax.naming.Name;
 import java.util.ArrayList;
 import java.util.List;
 
+@AllArgsConstructor
 @ApiModel
 @ToString(exclude = {"password"})
 @Entry(objectClasses = {"fintClient", "inetOrgPerson", "organizationalPerson", "person", "top"})

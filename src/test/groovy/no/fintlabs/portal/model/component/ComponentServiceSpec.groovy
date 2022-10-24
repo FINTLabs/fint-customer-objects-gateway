@@ -177,7 +177,7 @@ class ComponentServiceSpec extends Specification {
         println(assets)
 
         then:
-        assets.size == 1
+        assets.size() == 1
         1 * organisationService.getOrganisationByDn('ou=testOrg,ou=org,o=fint') >> Optional.of(org)
         1 * assetService.getAssets(org) >> [ ass ]
     }

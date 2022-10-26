@@ -3,12 +3,12 @@ package no.fintlabs.portal.model.client.producers;
 import no.fintlabs.kafka.requestreply.RequestProducerFactory;
 import no.fintlabs.kafka.requestreply.topic.ReplyTopicService;
 import no.fintlabs.portal.model.client.Client;
-import no.fintlabs.portal.model.client.ClientDto;
+import no.fintlabs.portal.model.client.ClientRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ClientGetRequestReplyProducerService extends ClientRequestReplyProducer<ClientDto, Client> {
+public class ClientGetRequestReplyProducerService extends ClientRequestReplyProducer<ClientRequest, Client> {
 
     public ClientGetRequestReplyProducerService(
             RequestProducerFactory requestProducerFactory,
@@ -21,7 +21,7 @@ public class ClientGetRequestReplyProducerService extends ClientRequestReplyProd
                 applicationId,
                 "client-get",
                 "client",
-                ClientDto.class,
+                ClientRequest.class,
                 Client.class
         );
     }

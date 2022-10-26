@@ -5,6 +5,7 @@ import no.fintlabs.portal.ldap.LdapService;
 import no.fintlabs.portal.model.asset.Asset;
 import no.fintlabs.portal.model.asset.AssetService;
 import no.fintlabs.portal.model.organisation.Organisation;
+import no.fintlabs.portal.model.organisation.OrganisationService;
 import no.fintlabs.portal.oauth.NamOAuthClientService;
 import no.fintlabs.portal.oauth.OAuthClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,9 @@ public class ClientService {
         return namOAuthClientService.getOAuthClient(client.getClientId()).getClientSecret();
     }
 
+    public Optional<Client> getClientBySimpleName(String clientSimpleName, Organisation organisation){
+        return getClientByDn(clientObjectService.getClientDn(clientObjectService.getClientFullName(clientSimpleName, organisation.getPrimaryAssetId()), organisation.getName()));
+    }
     public Optional<Client> getClient(String clientUuid, String orgUuid) {
         return getClientByDn(clientObjectService.getClientDn(clientUuid, orgUuid));
     }

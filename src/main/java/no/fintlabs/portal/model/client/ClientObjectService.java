@@ -16,13 +16,17 @@ public class ClientObjectService {
     private String organisationBase;
 
     public void setupClient(Client client, Organisation organisation) {
-        client.setName(String.format("%s@client.%s", client.getName(), organisation.getPrimaryAssetId()));
+        client.setName(getClientFullName(client.getName(), organisation.getPrimaryAssetId()));
         client.setDn(
                 LdapNameBuilder.newInstance(getClientBase(organisation.getName()))
                         .add(LdapConstants.CN, client.getName())
                         .build()
         );
         client.setSecret(PasswordUtility.generateSecret());
+    }
+
+    public String getClientFullName(String clientSimpleName, String organisationprimaryAssetId) {
+        return String.format("%s@client.%s", clientSimpleName, organisationprimaryAssetId);
     }
 
     public Name getClientBase(String orgUuid) {

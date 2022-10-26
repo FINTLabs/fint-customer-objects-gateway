@@ -2,12 +2,12 @@ package no.fintlabs.portal.model.client.producers;
 
 import no.fintlabs.kafka.requestreply.RequestProducerFactory;
 import no.fintlabs.kafka.requestreply.topic.ReplyTopicService;
-import no.fintlabs.portal.model.client.ClientDto;
+import no.fintlabs.portal.model.client.ClientRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ClientDeleteRequestReplyProducerService extends ClientRequestReplyProducer<ClientDto, ClientDto> {
+public class ClientDeleteRequestReplyProducerService extends ClientRequestReplyProducer<ClientRequest, ClientRequest> {
 
     public ClientDeleteRequestReplyProducerService(
             RequestProducerFactory requestProducerFactory,
@@ -20,8 +20,8 @@ public class ClientDeleteRequestReplyProducerService extends ClientRequestReplyP
                 applicationId,
                 "client-delete",
                 "client",
-                ClientDto.class,
-                ClientDto.class
+                ClientRequest.class,
+                ClientRequest.class
         );
     }
 

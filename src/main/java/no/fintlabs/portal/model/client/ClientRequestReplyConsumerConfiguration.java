@@ -7,15 +7,18 @@ import no.fintlabs.kafka.requestreply.RequestConsumerFactoryService;
 import no.fintlabs.kafka.requestreply.topic.RequestTopicNameParameters;
 import no.fintlabs.kafka.requestreply.topic.RequestTopicService;
 import no.fintlabs.portal.exceptions.EntityNotFoundException;
+import no.fintlabs.portal.model.component.Component;
+import no.fintlabs.portal.model.component.ComponentService;
 import no.fintlabs.portal.model.organisation.Organisation;
 import no.fintlabs.portal.model.organisation.OrganisationService;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.listener.CommonLoggingErrorHandler;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 @Slf4j
@@ -26,12 +29,21 @@ public class ClientRequestReplyConsumerConfiguration {
     private final ClientService clientService;
     private final RequestConsumerFactoryService requestConsumerFactoryService;
     private final RequestTopicService requestTopicService;
+    private final ComponentService componentService;
 
-    public ClientRequestReplyConsumerConfiguration(OrganisationService organisationService, ClientService clientService, RequestConsumerFactoryService requestConsumerFactoryService, RequestTopicService requestTopicService) {
+    public ClientRequestReplyConsumerConfiguration(
+            OrganisationService organisationService,
+            ClientService clientService,
+            RequestConsumerFactoryService requestConsumerFactoryService,
+            RequestTopicService requestTopicService,
+            ComponentService componentService,
+            @Value("${fint.application-id}") String applicationId
+    ) {
         this.organisationService = organisationService;
         this.clientService = clientService;
         this.requestConsumerFactoryService = requestConsumerFactoryService;
         this.requestTopicService = requestTopicService;
+        this.componentService = componentService;
     }
 
     private <V, R> ConcurrentMessageListenerContainer<String, V> initConsumer(
@@ -58,30 +70,38 @@ public class ClientRequestReplyConsumerConfiguration {
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, ClientDto> createClient() {
+    public ConcurrentMessageListenerContainer<String, ClientRequest> createOrUpdateClient() {
         return initConsumer(
                 "client-create",
                 "client",
-                ClientDto.class,
+                ClientRequest.class,
                 Client.class,
                 consumerRecord -> {
-                    // TODO: 19/10/2022 Needs support for error replies in fint-kafka (both in request producer and consumer)
-                    ClientDto clientDto = consumerRecord.value();
-                    Organisation organisation = organisationService.getOrganisationSync(clientDto.getOrgName());
-                    Optional<Client> optionalClient = clientService.getClient(clientDto.getName(), clientDto.getOrgName());
+                    ClientRequest clientRequest = consumerRecord.value();
+                    Organisation organisation = organisationService.getOrganisationSync(clientRequest.getOrgName());
 
-                    Client client = new Client();
-                    client.setName(clientDto.getName());
-                    client.setNote(clientDto.getNote());
-                    client.setShortDescription(clientDto.getShortDescription());
+                    Client client = clientService
+                            .getClientBySimpleName(clientRequest.getName(), organisation)
+                            .orElseGet(() -> createNewClient(clientRequest));
 
-                    if (optionalClient.isEmpty()) {
+                    if (isNewClient(client)) {
                         if (clientService.addClient(client, organisation)) {
+                            client = clientService.getClientBySimpleName(clientRequest.getName(), organisation).orElseThrow();
                             log.info("Client " + client.getClientId() + " added successfully");
                         } else {
                             log.error("Client " + client.getClientId() + " was not added");
                         }
                     }
+
+                    if (clientRequest.getNote() != null) {
+                        client.setNote(clientRequest.getNote());
+                    }
+
+                    if (clientRequest.getShortDescription() != null) {
+                        client.setShortDescription(clientRequest.getShortDescription());
+                    }
+
+                    updateComponents(clientRequest, client);
 
                     return ReplyProducerRecord
                             .<Client>builder()
@@ -92,17 +112,41 @@ public class ClientRequestReplyConsumerConfiguration {
         );
     }
 
+    private void updateComponents(ClientRequest clientRequest, Client client) {
+        client.getComponents().forEach(c -> {
+            Component component = componentService.getComponentByDn(c).orElseThrow();
+            componentService.unLinkClient(component, client);
+        });
+
+        clientRequest.getComponents().forEach(c -> {
+            Component component = componentService.getComponentByName(c).orElseThrow();
+            componentService.linkClient(component, client);
+        });
+    }
+
+    private boolean isNewClient(Client client) {
+        return StringUtils.isEmpty(client.getClientId());
+    }
+
+    private Client createNewClient(ClientRequest clientRequest) {
+        Client c = new Client();
+        c.setName(clientRequest.getName());
+        c.setNote(clientRequest.getNote());
+        c.setShortDescription(clientRequest.getShortDescription());
+        return c;
+    }
+
     @Bean
-    public ConcurrentMessageListenerContainer<String, ClientDto> deleteClient() {
+    public ConcurrentMessageListenerContainer<String, ClientRequest> deleteClient() {
         return initConsumer(
                 "client-delete",
                 "client",
-                ClientDto.class,
+                ClientRequest.class,
                 Client.class,
                 consumerRecord -> {
-                    ClientDto clientDto = consumerRecord.value();
-                    Organisation organisation = organisationService.getOrganisationSync(clientDto.getOrgName());
-                    Client client = clientService.getClient(clientDto.getName(), organisation.getName()).orElseThrow(() -> new EntityNotFoundException("Client " + clientDto.getName() + " not found"));
+                    ClientRequest clientRequest = consumerRecord.value();
+                    Organisation organisation = organisationService.getOrganisationSync(clientRequest.getOrgName());
+                    Client client = clientService.getClient(clientRequest.getName(), organisation.getName()).orElseThrow(() -> new EntityNotFoundException("Client " + clientRequest.getName() + " not found"));
 
                     clientService.deleteClient(client);
 
@@ -116,51 +160,17 @@ public class ClientRequestReplyConsumerConfiguration {
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, ClientDto> getClient() {
+    public ConcurrentMessageListenerContainer<String, ClientRequest> getClient() {
         return initConsumer(
                 "client-get",
                 "client",
-                ClientDto.class,
+                ClientRequest.class,
                 Client.class,
                 consumerRecord -> {
-                    ClientDto clientDto = consumerRecord.value();
-                    Organisation organisation = organisationService.getOrganisationSync(clientDto.getOrgName());
+                    ClientRequest clientRequest = consumerRecord.value();
+                    Organisation organisation = organisationService.getOrganisationSync(clientRequest.getOrgName());
 
-                    Client client = clientService.getClient(clientDto.getName(), organisation.getName()).orElseThrow(() -> new EntityNotFoundException("Client " + clientDto.getName() + " not found"));
-
-                    return ReplyProducerRecord
-                            .<Client>builder()
-                            .value(client)
-                            .build();
-
-                }
-        );
-    }
-
-    @Bean
-    public ConcurrentMessageListenerContainer<String, ClientDto> updateClient() {
-        return initConsumer(
-                "client-update",
-                "client",
-                ClientDto.class,
-                Client.class,
-                consumerRecord -> {
-                    ClientDto clientDto = consumerRecord.value();
-                    Organisation organisation = organisationService.getOrganisationSync(clientDto.getOrgName());
-
-                    Client client = clientService.getClient(clientDto.getName(), organisation.getName()).orElseThrow(() -> new EntityNotFoundException("Client " + clientDto.getName() + " not found"));
-
-                    System.out.println("test");
-                    System.out.println(clientDto);
-
-                    if (clientDto.getNote() != null)
-                        client.setNote(clientDto.getNote());
-                    if (clientDto.getShortDescription() != null)
-                        client.setShortDescription(clientDto.getShortDescription());
-
-                    if (!clientService.updateClient(client)) {
-                        throw new EntityNotFoundException(String.format("Could not update client: %s", client.getName()));
-                    }
+                    Client client = clientService.getClient(clientRequest.getName(), organisation.getName()).orElseThrow(() -> new EntityNotFoundException("Client " + clientRequest.getName() + " not found"));
 
                     return ReplyProducerRecord
                             .<Client>builder()

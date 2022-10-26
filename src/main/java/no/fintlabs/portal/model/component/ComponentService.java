@@ -1,6 +1,8 @@
 package no.fintlabs.portal.model.component;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fintlabs.portal.exceptions.EntityNotFoundException;
+import no.fintlabs.portal.exceptions.InvalidResourceException;
 import no.fintlabs.portal.ldap.LdapService;
 import no.fintlabs.portal.model.adapter.Adapter;
 import no.fintlabs.portal.model.asset.Asset;
@@ -68,10 +70,10 @@ public class ComponentService {
     }
 
     public Optional<Component> getComponentByName(String name) {
-        return getComponetByDn(getComponentDnByName(name));
+        return getComponentByDn(getComponentDnByName(name));
     }
 
-    public Optional<Component> getComponetByDn(String dn) {
+    public Optional<Component> getComponentByDn(String dn) {
         return Optional.ofNullable(ldapService.getEntry(dn, Component.class));
     }
 

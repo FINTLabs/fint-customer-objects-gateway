@@ -64,8 +64,8 @@ public class ClientService {
     public Optional<Client> getClientBySimpleName(String clientSimpleName, Organisation organisation){
         return getClientByDn(clientObjectService.getClientDn(clientObjectService.getClientFullName(clientSimpleName, organisation.getPrimaryAssetId()), organisation.getName()));
     }
-    public Optional<Client> getClient(String clientUuid, String orgUuid) {
-        return getClientByDn(clientObjectService.getClientDn(clientUuid, orgUuid));
+    public Optional<Client> getClient(String clientName, String orgId) {
+        return getClientByDn(clientObjectService.getClientDn(clientName, orgId));
     }
 
     public Optional<Client> getClientByDn(String dn) {

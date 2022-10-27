@@ -15,7 +15,7 @@ public class ClientRequest {
     @NotBlank
     private String shortDescription;
     @NotBlank
-    private String orgName;
+    private String orgId;
 
     private List<String> components = Collections.emptyList();
 }

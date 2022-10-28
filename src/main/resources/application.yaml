@@ -1,15 +1,15 @@
 fint:
   application-id: fint-customer-gateway
   org-id: fintlabs.no
-server:
-  max-http-header-size: 40KB
-  error:
-    include-message: always
+  kafka:
+    topic:
+      org-id: ${fint.org-id}
+      domain-context: flais
+    application-id: ${fint.application-id}
 spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
-  profiles:
-    include:
-      - kafka
-      - resource-server
+  kafka:
+    consumer:
+      group-id: ${fint.application-id}

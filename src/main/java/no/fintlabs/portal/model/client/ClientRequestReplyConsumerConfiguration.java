@@ -14,7 +14,6 @@ import no.fintlabs.portal.model.organisation.OrganisationService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.listener.CommonLoggingErrorHandler;
@@ -39,8 +38,7 @@ public class ClientRequestReplyConsumerConfiguration {
             ClientService clientService,
             RequestConsumerFactoryService requestConsumerFactoryService,
             RequestTopicService requestTopicService,
-            ComponentService componentService,
-            @Value("${fint.application-id}") String applicationId
+            ComponentService componentService
     ) {
         this.organisationService = organisationService;
         this.clientService = clientService;
@@ -51,34 +49,28 @@ public class ClientRequestReplyConsumerConfiguration {
 
     private <V, R> ConcurrentMessageListenerContainer<String, V> initConsumer(
             String topicName,
-            String parameterName,
-            Class<V> valueClass,
-            Class<R> replyValueClass,
             Function<ConsumerRecord<String, V>, ReplyProducerRecord<R>> consumerRecord
     ) {
         RequestTopicNameParameters requestTopicNameParameters = RequestTopicNameParameters
                 .builder()
-                .resource(topicName)
-                .parameterName(parameterName)
+                .resource("client-" + topicName)
+                .parameterName("client")
                 .build();
 
         requestTopicService.ensureTopic(requestTopicNameParameters, 0, TopicCleanupPolicyParameters.builder().build());
 
         return requestConsumerFactoryService.createFactory(
-                valueClass,
-                replyValueClass,
+                (Class<V>) ClientRequest.class,
+                (Class<R>) ClientReply.class,
                 consumerRecord,
                 new CommonLoggingErrorHandler()
         ).createContainer(requestTopicNameParameters);
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, ClientRequest> createClient() {
+    public ConcurrentMessageListenerContainer<String, ClientRequest> create() {
         return initConsumer(
-                "client-create",
-                "client",
-                ClientRequest.class,
-                ClientReply.class,
+                "create",
                 consumerRecord -> {
                     ClientRequest clientRequest = consumerRecord.value();
                     Organisation organisation = organisationService.getOrganisationSync(clientRequest.getOrgId());
@@ -137,12 +129,9 @@ public class ClientRequestReplyConsumerConfiguration {
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, ClientRequest> updateClient() {
+    public ConcurrentMessageListenerContainer<String, ClientRequest> update() {
         return initConsumer(
-                "client-update",
-                "client",
-                ClientRequest.class,
-                ClientReply.class,
+                "update",
                 consumerRecord -> {
                     ClientRequest clientRequest = consumerRecord.value();
                     Organisation organisation = organisationService.getOrganisationSync(clientRequest.getOrgId());
@@ -187,7 +176,6 @@ public class ClientRequestReplyConsumerConfiguration {
     }
 
 
-
     private boolean isNewClient(Client client) {
         return StringUtils.isEmpty(client.getClientId());
     }
@@ -201,12 +189,9 @@ public class ClientRequestReplyConsumerConfiguration {
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, ClientRequest> deleteClient() {
+    public ConcurrentMessageListenerContainer<String, ClientRequest> delete() {
         return initConsumer(
-                "client-delete",
-                "client",
-                ClientRequest.class,
-                ClientReply.class,
+                "delete",
                 consumerRecord -> {
                     ClientRequest clientRequest = consumerRecord.value();
                     Organisation organisation = organisationService.getOrganisation(clientRequest.getOrgId()).orElseThrow();
@@ -224,18 +209,15 @@ public class ClientRequestReplyConsumerConfiguration {
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, ClientRequest> getClient() {
+    public ConcurrentMessageListenerContainer<String, ClientRequest> get() {
         return initConsumer(
-                "client-get",
-                "client",
-                ClientRequest.class,
-                ClientReply.class,
+                "get",
                 consumerRecord -> {
                     ClientRequest clientRequest = consumerRecord.value();
                     Organisation organisation = organisationService.getOrganisation(clientRequest.getOrgId()).orElseThrow();
 
                     ClientReply clientReply = clientService.getClientBySimpleName(clientRequest.getName(), organisation)
-                            .map(client -> createReplyFromClient(client))
+                            .map(this::createReplyFromClient)
                             .orElse(null);
 
                     return ReplyProducerRecord

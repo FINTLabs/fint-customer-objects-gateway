@@ -21,6 +21,7 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Slf4j
@@ -73,29 +74,36 @@ public class ClientRequestReplyConsumerConfiguration {
                 "create",
                 consumerRecord -> {
                     ClientRequest clientRequest = consumerRecord.value();
-                    Organisation organisation = organisationService.getOrganisationSync(clientRequest.getOrgId());
+                    Optional<Organisation> organisation = organisationService.getOrganisation(clientRequest.getOrgId());
 
-                    Client client = clientService
-                            .getClientBySimpleName(clientRequest.getName(), organisation)
-                            .orElseGet(() -> createNewClient(clientRequest));
 
-                    if (isNewClient(client)) {
-                        if (clientService.addClient(client, organisation)) {
-                            client = clientService.getClientBySimpleName(clientRequest.getName(), organisation).orElseThrow();
-                            log.info("Client " + client.getClientId() + " added successfully");
-                        } else {
-                            log.error("Client " + client.getClientId() + " was not added");
+                    if (organisation.isPresent()) {
+                        Client client = clientService
+                                .getClientBySimpleName(clientRequest.getName(), organisation.get())
+                                .orElseGet(() -> createNewClient(clientRequest));
+
+                        if (isNewClient(client)) {
+                            if (clientService.addClient(client, organisation.get())) {
+                                client = clientService.getClientBySimpleName(clientRequest.getName(), organisation.get()).orElseThrow();
+                                log.info("Client " + client.getClientId() + " added successfully");
+                            } else {
+                                log.error("Client " + client.getClientId() + " was not added");
+                            }
                         }
+
+                        setFieldsAndComponents(clientRequest, client);
+                        return ReplyProducerRecord
+                                .<ClientReply>builder()
+                                .value(createReplyFromClient(client, true))
+                                .build();
                     }
 
-                    setFieldsAndComponents(clientRequest, client);
-                    ClientReply clientReply = createReplyFromClient(client, true);
-
-                    return ReplyProducerRecord
-                            .<ClientReply>builder()
-                            .value(clientReply)
+                    return ReplyProducerRecord.<ClientReply>builder()
+                            .value(ClientReply.builder()
+                                    .successful(false)
+                                    .errorMessage("OrgId " + clientRequest.getOrgId() + " does not exist")
+                                    .build())
                             .build();
-
                 }
         );
     }

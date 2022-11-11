@@ -13,4 +13,7 @@ public class ClientReply {
     private String clientId;
     private String clientSecret;
     private String orgId;
+    private String errorMessage;
+    @Builder.Default
+    private boolean successful = true;
 }

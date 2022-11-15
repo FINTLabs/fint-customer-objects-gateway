@@ -1,6 +1,7 @@
 package no.fintlabs.portal.model.adapter;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fintlabs.portal.exceptions.EntityNotFoundException;
 import no.fintlabs.portal.model.organisation.Organisation;
 import no.fintlabs.portal.model.organisation.OrganisationService;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +45,7 @@ public class AdapterRequestProcessingService {
 
         Adapter adapter = adapterService
                 .getAdapter(adapterRequest.getName(), organisation.getName())
-                .orElseGet(() -> createNewAdapter(adapterRequest));
+                .orElseThrow(() -> new EntityNotFoundException("Adapter " + adapterRequest.getName() + " not found"));
         setFields(adapterRequest, adapter);
 
         return createReplyFromAdapter(adapter, organisation);
@@ -55,7 +56,7 @@ public class AdapterRequestProcessingService {
 
         Adapter adapter = adapterService
                 .getAdapter(adapterRequest.getName(), organisation.getName())
-                .orElseGet(() -> createNewAdapter(adapterRequest));
+                .orElseThrow(() -> new EntityNotFoundException("Adapter " + adapterRequest.getName() + " not found"));
 
         adapterService.deleteAdapter(adapter);
     }
@@ -65,7 +66,7 @@ public class AdapterRequestProcessingService {
 
         Adapter adapter = adapterService
                 .getAdapter(adapterRequest.getName(), organisation.getName())
-                .orElseGet(() -> createNewAdapter(adapterRequest));
+                .orElseThrow(() -> new EntityNotFoundException("Adapter " + adapterRequest.getName() + " not found"));
 
         return createReplyFromAdapter(adapter, organisation);
     }

@@ -10,9 +10,9 @@ import java.util.List;
 public class ClientRequest {
     @NotBlank
     private String name;
-    @NotBlank
+    //@NotBlank
     private String note;
-    @NotBlank
+    //@NotBlank
     private String shortDescription;
     @NotBlank
     private String orgId;

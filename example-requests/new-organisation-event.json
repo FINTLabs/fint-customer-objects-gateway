@@ -1,0 +1,12 @@
+{
+  "dn": "",
+  "name": "frode_io",
+  "orgNumber": "123456789",
+  "displayName": "Frode",
+  "components": [],
+  "legalContact": null,
+  "techicalContacts": [],
+  "k8sSize": null,
+  "customer": false,
+  "primaryAssetId": null
+}

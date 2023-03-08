@@ -14,7 +14,6 @@ import no.fintlabs.portal.model.asset.AssetService;
 import no.fintlabs.portal.model.client.Client;
 import no.fintlabs.portal.model.client.ClientService;
 import no.fintlabs.portal.model.component.Component;
-import no.fintlabs.portal.model.component.ComponentObjectService;
 import no.fintlabs.portal.model.component.ComponentService;
 import no.fintlabs.portal.model.contact.Contact;
 import no.fintlabs.portal.model.contact.ContactService;
@@ -64,10 +63,10 @@ public class OrganisationService {
         this.componentService = componentService;
     }
 
-    public boolean createOrganisation(Organisation organisation) {
+    public Organisation createOrganisation(Organisation organisation) {
         log.info("Creating organisation: {}", organisation);
 
-        if (organisation.getDn() == null) {
+        if (!StringUtils.hasText(organisation.getDn())) {
             organisationObjectService.setupOrganisation(organisation);
         }
 
@@ -78,7 +77,7 @@ public class OrganisationService {
         createAssetContainer(organisation.getDn());
         createPrimaryAsset(organisation);
 
-        return createdOrganisation;
+        return getOrganisation(organisation.getName()).orElseThrow();
     }
 
     public boolean updateOrganisation(Organisation organisation) {
@@ -98,11 +97,11 @@ public class OrganisationService {
     public Optional<Organisation> getOrganisation(String name) {
 
         Optional<Organisation> oranisation = Optional.ofNullable(ldapService.getEntry(
-                LdapNameBuilder.newInstance(organisationBase)
-                        .add(LdapConstants.OU, name)
-                        .build()
-                        .toString(),
-                Organisation.class
+                        LdapNameBuilder.newInstance(organisationBase)
+                                .add(LdapConstants.OU, name)
+                                .build()
+                                .toString(),
+                        Organisation.class
                 )
         );
 

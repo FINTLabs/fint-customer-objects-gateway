@@ -65,14 +65,21 @@ public class CreateClientEventHandler {
     private void processEvent(ConsumerRecord<String, ClientEvent> consumerRecord) {
 
         log.info("Event received for : {}", consumerRecord.value().getObject());
-
-        ClientEvent response = organisationService
-                .getOrganisation(consumerRecord.value().getOrganisationObjectName())
-                .map(organisation -> clientService.addClient(consumerRecord.value().getObject(), organisation)
-                        .map(client -> ClientEvent.builder().object(client).status(FintCustomerObjectEvent.Status.builder().successful(true).build()).build())
-                        .orElse(ClientEvent.builder().status(FintCustomerObjectEvent.Status.builder().successful(false).message("Shit granit 🧨").build()).build()))
-                .orElse(ClientEvent.builder().status(FintCustomerObjectEvent.Status.builder().successful(false).message("Unable to find organisation").build()).build());
-
+        final ClientEvent response = consumerRecord.value();
+        try {
+            organisationService
+                    .getOrganisation(consumerRecord.value().getOrganisationObjectName())
+                    .map(organisation -> clientService.addClient(consumerRecord.value().getObject(), organisation)
+                            .map(client -> {
+                                response.setObject(client);
+                                response.setStatus(FintCustomerObjectEvent.Status.builder().successful(true).build());
+                                return response;
+                            })
+                            .orElseThrow(() -> new RuntimeException("An excepted error occurred while creating client.")))
+                    .orElseThrow(() -> new RuntimeException("Unable to find organisation"));
+        } catch (Exception e) {
+            response.setStatus(FintCustomerObjectEvent.Status.builder().successful(false).message(e.getMessage()).build());
+        }
 
         eventProducer.send(EventProducerRecord
                 .<ClientEvent>builder()

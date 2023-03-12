@@ -31,7 +31,7 @@ public class ClientService {
     @Autowired
     private NamOAuthClientService namOAuthClientService;
 
-    public boolean addClient(Client client, Organisation organisation) {
+    public Optional<Client> addClient(Client client, Organisation organisation) {
         clientObjectService.setupClient(client, organisation);
 
         OAuthClient oAuthClient = namOAuthClientService.addOAuthClient(
@@ -49,7 +49,7 @@ public class ClientService {
             assetService.linkClientToAsset(primaryAsset, client);
         }
 
-        return created;
+        return getClient(client.getName(), organisation.getPrimaryAssetId());
     }
 
     public List<Client> getClients(String orgName) {

@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 import static no.fintlabs.portal.model.contact.ContactService.ADMIN_ROLE_NAME;
 
-@SuppressWarnings("ALL")
+//@SuppressWarnings("ALL")
 @Slf4j
 @Service
 public class OrganisationService {

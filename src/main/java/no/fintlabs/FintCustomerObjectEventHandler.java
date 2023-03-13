@@ -3,6 +3,7 @@ package no.fintlabs;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.kafka.event.EventConsumerFactoryService;
 import no.fintlabs.kafka.event.EventProducer;
+import no.fintlabs.kafka.event.EventProducerFactory;
 import no.fintlabs.kafka.event.EventProducerRecord;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
 import no.fintlabs.kafka.event.topic.EventTopicService;
@@ -34,16 +35,16 @@ public abstract class FintCustomerObjectEventHandler<T extends FintCustomerObjec
     public FintCustomerObjectEventHandler(EventTopicService eventTopicService,
                                           EventConsumerFactoryService consumer,
                                           OrganisationService organisationService,
-                                          EventProducer<T> eventProducer,
+                                          EventProducerFactory eventProducerFactory,
                                           Class<O> objectType,
                                           String eventType) {
         this.eventTopicService = eventTopicService;
         this.consumer = consumer;
         this.organisationService = organisationService;
-        this.eventProducer = eventProducer;
         this.eventType = eventType;
         this.objectType = objectType.getSimpleName().toLowerCase();
 
+        eventProducer = eventProducerFactory.createProducer(getParameterClass());
         organisationCreatedTopic = EventTopicNameParameters
                 .builder()
                 .orgId("flais.io")       // Optional if set as application property

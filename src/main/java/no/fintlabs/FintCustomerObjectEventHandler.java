@@ -1,52 +1,62 @@
-package no.fintlabs.portal.model.client;
+package no.fintlabs;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.FintCustomerObjectEvent;
 import no.fintlabs.kafka.event.EventConsumerFactoryService;
 import no.fintlabs.kafka.event.EventProducer;
-import no.fintlabs.kafka.event.EventProducerFactory;
 import no.fintlabs.kafka.event.EventProducerRecord;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
 import no.fintlabs.kafka.event.topic.EventTopicService;
+import no.fintlabs.portal.ldap.BasicLdapEntry;
 import no.fintlabs.portal.model.organisation.Organisation;
 import no.fintlabs.portal.model.organisation.OrganisationService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.lang.reflect.ParameterizedType;
 import java.time.Duration;
 import java.util.function.Function;
 
 @Slf4j
-@Component
-public class CreateClientEventHandler {
+public abstract class FintCustomerObjectEventHandler<T extends FintCustomerObjectEvent<O>, O extends BasicLdapEntry> {
 
     private final EventTopicService eventTopicService;
     private final EventConsumerFactoryService consumer;
-    private final ClientService clientService;
 
     private final OrganisationService organisationService;
 
-    private final EventProducer<ClientEvent> eventProducer;
+    private final EventProducer<T> eventProducer;
     private final EventTopicNameParameters organisationCreatedTopic;
 
-    public CreateClientEventHandler(EventTopicService eventTopicService, EventConsumerFactoryService consumer, ClientService clientService, OrganisationService organisationService, EventProducerFactory eventProducerFactory) {
+    private final String eventType;
+
+    private final String objectType;
+
+    public FintCustomerObjectEventHandler(EventTopicService eventTopicService,
+                                          EventConsumerFactoryService consumer,
+                                          OrganisationService organisationService,
+                                          EventProducer<T> eventProducer,
+                                          Class<O> objectType,
+                                          String eventType) {
         this.eventTopicService = eventTopicService;
         this.consumer = consumer;
-        this.clientService = clientService;
         this.organisationService = organisationService;
+        this.eventProducer = eventProducer;
+        this.eventType = eventType;
+        this.objectType = objectType.getSimpleName().toLowerCase();
 
-        eventProducer = eventProducerFactory.createProducer(ClientEvent.class);
         organisationCreatedTopic = EventTopicNameParameters
                 .builder()
                 .orgId("flais.io")       // Optional if set as application property
                 .domainContext("fint-service")  // Optional if set as application property
-                .eventName("client")
+                .eventName(this.objectType)
                 .build();
-
-
     }
 
+    @SuppressWarnings("unchecked")
+    private Class<T> getParameterClass() {
+        return (Class<T>) ((ParameterizedType) getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[0];
+    }
 
     @PostConstruct
     public void init() {
@@ -54,46 +64,36 @@ public class CreateClientEventHandler {
                 .builder()
                 .orgId("flais.io")       // Optional if set as application property
                 .domainContext("fint-service")  // Optional if set as application property
-                .eventName("create-client")
+                .eventName(eventType + "-" + objectType)
                 .build();
         eventTopicService.ensureTopic(createClientTopic, Duration.ofHours(48).toMillis());
         eventTopicService.ensureTopic(organisationCreatedTopic, Duration.ofHours(48).toMillis());
 
-        consumer.createFactory(ClientEvent.class, this::processEvent)
+        consumer.createFactory(getParameterClass(), this::processEvent)
                 .createContainer(createClientTopic);
 
     }
 
-    private void processEvent(ConsumerRecord<String, ClientEvent> consumerRecord) {
+    private void processEvent(ConsumerRecord<String, T> consumerRecord) {
 
         log.info("Event received for : {}", consumerRecord.value().getObject());
-        final ClientEvent response = consumerRecord.value();
+        final T response = consumerRecord.value();
         try {
             organisationService
                     .getOrganisation(consumerRecord.value().getOrganisationObjectName())
-                    .map(createClient(consumerRecord, response))
+                    .map(handleObject(consumerRecord, response))
                     .orElseThrow(() -> new RuntimeException("Unable to find organisation"));
         } catch (Exception e) {
             response.setStatus(FintCustomerObjectEvent.Status.builder().successful(false).message(e.getMessage()).build());
         }
 
         eventProducer.send(EventProducerRecord
-                .<ClientEvent>builder()
+                .<T>builder()
                 .topicNameParameters(organisationCreatedTopic)
                 .value(response)
                 .build()
         );
     }
 
-    private Function<Organisation, ClientEvent> createClient(ConsumerRecord<String, ClientEvent> consumerRecord, ClientEvent response) {
-        return organisation -> clientService.addClient(consumerRecord.value().getObject(), organisation)
-                .map(client -> {
-                    response.setObject(client);
-                    response.setStatus(FintCustomerObjectEvent.Status.builder().successful(true).build());
-                    return response;
-                })
-                .orElseThrow(() -> new RuntimeException("An unexpected error occurred while creating client."));
-    }
-
-
+    public abstract Function<Organisation, T> handleObject(ConsumerRecord<String, T> consumerRecord, T response);
 }

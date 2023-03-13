@@ -49,7 +49,7 @@ public class ClientService {
             assetService.linkClientToAsset(primaryAsset, client);
         }
 
-        return getClient(client.getName(), organisation.getPrimaryAssetId());
+        return getClient(client.getName(), organisation.getName());
     }
 
     public List<Client> getClients(String orgName) {

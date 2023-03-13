@@ -1,0 +1,14 @@
+{
+  "object": {
+    "dn": "cn=test6@client.frode.io,ou=clients,ou=frode_io,ou=organisations,o=fint-test",
+    "name": "test6@client.frode.io",
+    "shortDescription": "test6",
+    "assetId": "frode.io",
+    "asset": "ou=frode_io,ou=assets,ou=frode_io,ou=organisations,o=fint-test",
+    "note": null,
+    "clientId": "f60a39c2-4d62-4ba1-8677-b1d63ae264a5",
+    "components": [],
+    "accessPackages": []
+  },
+  "orgId": "frode.io"
+}

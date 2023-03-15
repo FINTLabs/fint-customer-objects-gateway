@@ -8,13 +8,12 @@ import no.fintlabs.kafka.event.EventProducerRecord;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
 import no.fintlabs.kafka.event.topic.EventTopicService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 
 @Slf4j
-@Component
+//@Component
 public class OrganisationEventHandler {
 
     private final EventTopicService eventTopicService;

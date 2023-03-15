@@ -1,9 +1,10 @@
 package no.fintlabs.portal.model.client;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.jackson.Jacksonized;
 import no.fintlabs.FintCustomerObjectEvent;
+
+import javax.validation.constraints.NotNull;
 
 //@Builder
 @Getter
@@ -11,8 +12,7 @@ import no.fintlabs.FintCustomerObjectEvent;
 public class ClientEvent extends FintCustomerObjectEvent<Client> {
 
 
-    @Builder
-    public ClientEvent(Client object, String orgId, Status status) {
-        super(object, orgId, status);
+    public ClientEvent(Client object, String orgId, @NotNull Operation operation) {
+        super(object, orgId, operation);
     }
 }

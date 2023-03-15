@@ -2,60 +2,49 @@ package no.fintlabs;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.kafka.event.EventConsumerFactoryService;
-import no.fintlabs.kafka.event.EventProducer;
-import no.fintlabs.kafka.event.EventProducerFactory;
-import no.fintlabs.kafka.event.EventProducerRecord;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
 import no.fintlabs.kafka.event.topic.EventTopicService;
 import no.fintlabs.portal.ldap.BasicLdapEntry;
-import no.fintlabs.portal.model.organisation.Organisation;
 import no.fintlabs.portal.model.organisation.OrganisationService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.ParameterizedType;
 import java.time.Duration;
-import java.util.function.Function;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
-public abstract class FintCustomerObjectEventHandler<T extends FintCustomerObjectEvent<O>, O extends BasicLdapEntry> {
+public abstract class FintCustomerObjectEventHandler<E extends FintCustomerObjectEvent<T>, T extends BasicLdapEntry> {
 
     private final EventTopicService eventTopicService;
     private final EventConsumerFactoryService consumer;
 
     private final OrganisationService organisationService;
 
-    private final EventProducer<T> eventProducer;
-    private final EventTopicNameParameters organisationCreatedTopic;
+    private Map<String, FintCustomerObjectEntityHandler<T, E>> actionsHandlerMap;
+    private final Collection<FintCustomerObjectEntityHandler<T, E>> handlers;
 
-    private final String eventType;
 
     private final String objectType;
 
     public FintCustomerObjectEventHandler(EventTopicService eventTopicService,
                                           EventConsumerFactoryService consumer,
                                           OrganisationService organisationService,
-                                          EventProducerFactory eventProducerFactory,
-                                          Class<O> objectType,
-                                          String eventType) {
+                                          Collection<FintCustomerObjectEntityHandler<T, E>> handlers, Class<T> objectType) {
         this.eventTopicService = eventTopicService;
         this.consumer = consumer;
         this.organisationService = organisationService;
-        this.eventType = eventType;
+        this.handlers = handlers;
         this.objectType = objectType.getSimpleName().toLowerCase();
 
-        eventProducer = eventProducerFactory.createProducer(getParameterClass());
-        organisationCreatedTopic = EventTopicNameParameters
-                .builder()
-                .orgId("flais.io")       // Optional if set as application property
-                .domainContext("fint-service")  // Optional if set as application property
-                .eventName(this.objectType)
-                .build();
+
     }
 
     @SuppressWarnings("unchecked")
-    private Class<T> getParameterClass() {
-        return (Class<T>) ((ParameterizedType) getClass()
+    private Class<E> getParameterClass() {
+        return (Class<E>) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
@@ -65,36 +54,37 @@ public abstract class FintCustomerObjectEventHandler<T extends FintCustomerObjec
                 .builder()
                 .orgId("flais.io")       // Optional if set as application property
                 .domainContext("fint-service")  // Optional if set as application property
-                .eventName(eventType + "-" + objectType)
+                .eventName(objectType)
                 .build();
         eventTopicService.ensureTopic(createClientTopic, Duration.ofHours(48).toMillis());
-        eventTopicService.ensureTopic(organisationCreatedTopic, Duration.ofHours(48).toMillis());
 
         consumer.createFactory(getParameterClass(), this::processEvent)
                 .createContainer(createClientTopic);
 
+        actionsHandlerMap = new HashMap<>();
+        handlers.forEach(fintCustomerObjectEntityHandler -> actionsHandlerMap.put(fintCustomerObjectEntityHandler.operation().name(), fintCustomerObjectEntityHandler));
+        log.info("Registered {} handlers", handlers.size());
+
     }
 
-    private void processEvent(ConsumerRecord<String, T> consumerRecord) {
+    private void processEvent(ConsumerRecord<String, E> consumerRecord) {
 
         log.info("Event received for : {}", consumerRecord.value().getObject());
-        final T response = consumerRecord.value();
         try {
-            organisationService
-                    .getOrganisation(consumerRecord.value().getOrganisationObjectName())
-                    .map(handleObject(consumerRecord, response))
-                    .orElseThrow(() -> new RuntimeException("Unable to find organisation"));
+            actionsHandlerMap
+                    .get(consumerRecord.value().getOperation().name())
+                    .accept(consumerRecord,
+                            organisationService
+                                    .getOrganisation(consumerRecord.value().getOrganisationObjectName())
+                                    .orElseThrow(() -> new RuntimeException("Unable to find organisation " + consumerRecord.value().getOrgId()))
+                    );
+
         } catch (Exception e) {
-            response.setStatus(FintCustomerObjectEvent.Status.builder().successful(false).message(e.getMessage()).build());
+            log.error("An error occurred when handling event {}:", consumerRecord.value().getObject());
+            log.error(e.getMessage());
         }
 
-        eventProducer.send(EventProducerRecord
-                .<T>builder()
-                .topicNameParameters(organisationCreatedTopic)
-                .value(response)
-                .build()
-        );
     }
 
-    public abstract Function<Organisation, T> handleObject(ConsumerRecord<String, T> consumerRecord, T response);
+
 }

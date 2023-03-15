@@ -2,12 +2,11 @@ package no.fintlabs;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
-import lombok.extern.jackson.Jacksonized;
 import no.fintlabs.portal.ldap.BasicLdapEntry;
+
+import javax.validation.constraints.NotNull;
 
 
 @Getter
@@ -16,7 +15,9 @@ import no.fintlabs.portal.ldap.BasicLdapEntry;
 public abstract class FintCustomerObjectEvent<T extends BasicLdapEntry> {
     private T object;
     private String orgId;
-    private Status status;
+    @NotNull
+    private Operation operation;
+    //private Status status;
 
     @JsonIgnore
     public String getOrganisationObjectName() {
@@ -24,12 +25,18 @@ public abstract class FintCustomerObjectEvent<T extends BasicLdapEntry> {
     }
 
 
-
-    @Getter
-    @Builder
-    @Jacksonized
-    public static final class Status {
-        private boolean successful;
-        private String message;
+    public enum Operation {
+        CREATE,
+        READ,
+        UPDATE,
+        DELETE
     }
+
+//    @Getter
+//    @Builder
+//    @Jacksonized
+//    public static final class Status {
+//        private boolean successful;
+//        private String message;
+//    }
 }

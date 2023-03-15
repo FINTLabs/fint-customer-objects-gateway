@@ -1,7 +1,8 @@
 {
   "object": {
-    "name": "test7",
-    "shortDescription": "test7"
+    "name": "test10",
+    "shortDescription": "test10"
   },
-  "orgId": "frode.io"
+  "orgId": "frode.io",
+  "operation": "CREATE"
 }

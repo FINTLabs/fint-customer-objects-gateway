@@ -72,8 +72,11 @@ public class ClientService {
         return Optional.ofNullable(ldapService.getEntry(dn, Client.class));
     }
 
-    public boolean updateClient(Client client) {
-        return ldapService.updateEntry(client);
+    public Optional<Client> updateClient(Client client) {
+        if (ldapService.updateEntry(client)) {
+            return getClientByDn(client.getDn());
+        }
+        return Optional.empty();
     }
 
     public Optional<Client> deleteClient(Client client) {

@@ -11,26 +11,26 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class GetClientHandler extends FintCustomerObjectEntityHandler<Client, ClientEvent> {
-
+public class UpdateClientHandler extends FintCustomerObjectEntityHandler<Client, ClientEvent> {
     private final ClientService clientService;
 
-    protected GetClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService) {
+    protected UpdateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService) {
         super(entityTopicService, entityProducerFactory, Client.class);
         this.clientService = clientService;
     }
 
     @Override
     public String operation() {
-        return FintCustomerObjectEvent.Operation.READ.name() + "-CLIENT";
+        return FintCustomerObjectEvent.Operation.UPDATE.name() + "-CLIENT";
     }
 
     @Override
     public void accept(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
         log.info("{}", consumerRecord);
         log.info("{}", organisation);
-        Client client = clientService.getClientByDn(consumerRecord.value().getObject().getDn())
-                .orElseThrow(() -> new RuntimeException("An unexpected error occurred while reading client."));
+
+        Client client = clientService.updateClient(consumerRecord.value().getObject())
+                .orElseThrow(() -> new RuntimeException("An unexpected error occurred while updating client."));
         send(client);
     }
 }

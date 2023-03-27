@@ -11,17 +11,19 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class DeleteClientHandler extends FintCustomerObjectEntityHandler<Client, ClientEvent> {
+public class CreateClientHandler extends FintCustomerObjectEntityHandler<Client, ClientEvent> {
 
     private final ClientService clientService;
-    protected DeleteClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService) {
+
+    protected CreateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService) {
         super(entityTopicService, entityProducerFactory, Client.class);
         this.clientService = clientService;
     }
 
+
     @Override
     public String operation() {
-        return FintCustomerObjectEvent.Operation.DELETE.name() + "-CLIENT";
+        return FintCustomerObjectEvent.Operation.CREATE.name() + "-CLIENT";
     }
 
     @Override
@@ -29,8 +31,8 @@ public class DeleteClientHandler extends FintCustomerObjectEntityHandler<Client,
         log.info("{}", consumerRecord);
         log.info("{}", organisation);
 
-        Client client = clientService.deleteClient(consumerRecord.value().getObject())
-                .orElseThrow(() -> new RuntimeException("An unexpected error occurred while deleting client."));
-        sendDelete(client.getDn());
+        Client client = clientService.addClient(consumerRecord.value().getObject(), organisation)
+                .orElseThrow(() -> new RuntimeException("An unexpected error occurred while creating client."));
+        send(client);
     }
 }

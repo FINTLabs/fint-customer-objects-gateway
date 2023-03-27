@@ -1,14 +1,15 @@
 {
   "object": {
-    "dn": "cn=test6@client.frode.io,ou=clients,ou=frode_io,ou=organisations,o=fint-test",
-    "name": "test6@client.frode.io",
-    "shortDescription": "test6",
-    "assetId": "frode.io",
-    "asset": "ou=frode_io,ou=assets,ou=frode_io,ou=organisations,o=fint-test",
+    "dn": "cn=test10@client.fintlabs.no,ou=clients,ou=fintlabs_no,ou=organisations,o=fint",
+    "name": "test10@client.fintlabs.no",
+    "shortDescription": "test10",
+    "assetId": "fintlabs.no",
+    "asset": "ou=fintlabs_no,ou=assets,ou=fintlabs_no,ou=organisations,o=fint",
     "note": null,
-    "clientId": "f60a39c2-4d62-4ba1-8677-b1d63ae264a5",
+    "clientId": "735a1a9e-4613-4e8c-ae98-2d3f537c1e7a",
     "components": [],
     "accessPackages": []
   },
-  "orgId": "frode.io"
+  "orgId": "fintlabs.no",
+  "operation": "DELETE"
 }

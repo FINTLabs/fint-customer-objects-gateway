@@ -62,7 +62,12 @@ public abstract class FintCustomerObjectEventHandler<E extends FintCustomerObjec
                 .createContainer(createClientTopic);
 
         actionsHandlerMap = new HashMap<>();
-        handlers.forEach(fintCustomerObjectEntityHandler -> actionsHandlerMap.put(fintCustomerObjectEntityHandler.operation().name(), fintCustomerObjectEntityHandler));
+        handlers
+                .forEach(fintCustomerObjectEntityHandler ->
+                        actionsHandlerMap.put(
+                                fintCustomerObjectEntityHandler.operation(),
+                                fintCustomerObjectEntityHandler)
+                );
         log.info("Registered {} handlers", handlers.size());
 
     }
@@ -72,7 +77,7 @@ public abstract class FintCustomerObjectEventHandler<E extends FintCustomerObjec
         log.info("Event received for : {}", consumerRecord.value().getObject());
         try {
             actionsHandlerMap
-                    .get(consumerRecord.value().getOperation().name())
+                    .get(consumerRecord.value().getOperation())
                     .accept(consumerRecord,
                             organisationService
                                     .getOrganisation(consumerRecord.value().getOrganisationObjectName())

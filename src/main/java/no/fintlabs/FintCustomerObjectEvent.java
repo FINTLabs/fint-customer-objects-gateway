@@ -7,6 +7,7 @@ import lombok.Setter;
 import no.fintlabs.portal.ldap.BasicLdapEntry;
 
 import javax.validation.constraints.NotNull;
+import java.lang.reflect.ParameterizedType;
 
 
 @Getter
@@ -24,6 +25,15 @@ public abstract class FintCustomerObjectEvent<T extends BasicLdapEntry> {
         return orgId.replaceAll("\\.", "_");
     }
 
+    public String getOperation() {
+        return String.format("%s-%s", operation.name(), getParameterClass().getSimpleName().toUpperCase());
+    }
+
+    @SuppressWarnings("unchecked")
+    private Class<T> getParameterClass() {
+        return (Class<T>) ((ParameterizedType) getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[0];
+    }
 
     public enum Operation {
         CREATE,

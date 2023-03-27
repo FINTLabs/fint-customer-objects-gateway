@@ -49,12 +49,26 @@ public abstract class FintCustomerObjectEntityHandler<T extends BasicLdapEntry, 
         );
     }
 
+    public void sendDelete(String dn) {
+        entityProducer.send(EntityProducerRecord
+                .<T>builder()
+                .key(dn)
+                .topicNameParameters(entityTopic)
+                .value(null)
+                .build()
+        );
+    }
+
     @SuppressWarnings("unchecked")
     private Class<T> getParameterClass() {
         return (Class<T>) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
-    public abstract FintCustomerObjectEvent.Operation operation();
+//    public String getEntityType() {
+//        return getParameterClass().getSimpleName().toUpperCase();
+//    }
+
+    public abstract String operation();
 
 }

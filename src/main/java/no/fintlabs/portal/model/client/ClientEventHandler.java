@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 
 @Component
-public class ClientHandler extends FintCustomerObjectEventHandler<ClientEvent, Client> {
+public class ClientEventHandler extends FintCustomerObjectEventHandler<ClientEvent, Client> {
 
 
-    public ClientHandler(EventTopicService eventTopicService, EventConsumerFactoryService consumer, OrganisationService organisationService, Collection<FintCustomerObjectEntityHandler<Client, ClientEvent>> fintCustomerObjectEntityHandlers) {
+    public ClientEventHandler(EventTopicService eventTopicService, EventConsumerFactoryService consumer, OrganisationService organisationService, Collection<FintCustomerObjectEntityHandler<Client, ClientEvent>> fintCustomerObjectEntityHandlers) {
         super(eventTopicService, consumer, organisationService, fintCustomerObjectEntityHandlers, Client.class);
     }
 }

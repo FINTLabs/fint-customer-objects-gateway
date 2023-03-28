@@ -9,6 +9,7 @@ import no.fintlabs.portal.oauth.NamOAuthClientService;
 import no.fintlabs.portal.oauth.OAuthClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -96,9 +97,12 @@ public class AdapterService {
         return ldapService.updateEntry(adapter);
     }
 
-    public void deleteAdapter(Adapter adapter) {
-        namOAuthClientService.removeOAuthClient(adapter.getClientId());
+    public Optional<Adapter> deleteAdapter(Adapter adapter) {
+        if (StringUtils.hasText(adapter.getClientId())) {
+            namOAuthClientService.removeOAuthClient(adapter.getClientId());
+        }
         ldapService.deleteEntry(adapter);
+        return Optional.ofNullable(adapter);
     }
 
     public void resetAdapterPassword(Adapter adapter, String newPassword) {

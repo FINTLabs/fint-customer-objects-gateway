@@ -93,8 +93,11 @@ public class AdapterService {
         return namOAuthClientService.getOAuthClient(adapter.getClientId()).getClientSecret();
     }
 
-    public boolean updateAdapter(Adapter adapter) {
-        return ldapService.updateEntry(adapter);
+    public Optional<Adapter> updateAdapter(Adapter adapter) {
+        if (ldapService.updateEntry(adapter)) {
+            return getAdapterByDn(adapter.getDn());
+        }
+        return Optional.empty();
     }
 
     public Optional<Adapter> deleteAdapter(Adapter adapter) {

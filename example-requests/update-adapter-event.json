@@ -1,0 +1,15 @@
+{
+  "object": {
+    "dn": "cn=adapter01@adapter.fintlabs.no,ou=adapters,ou=fintlabs_no,ou=organisations,o=fint",
+    "name": "adapter01@adapter.fintlabs.no",
+    "shortDescription": "adapter01 Updated Short Description",
+    "assetId": "fintlabs.no",
+    "asset": "ou=fintlabs_no,ou=assets,ou=fintlabs_no,ou=organisations,o=fint",
+    "note": null,
+    "clientId": "c9dda5f4-010a-45ce-a9e9-8c08f7a7c30b",
+    "components": ["ou=utdanning_elev,ou=components,o=fint"],
+    "accessPackages": []
+  },
+  "orgId": "fintlabs.no",
+  "operation": "UPDATE"
+}

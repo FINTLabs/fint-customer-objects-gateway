@@ -11,17 +11,17 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class DeleteAdapterHandler extends FintCustomerObjectEntityHandler<Adapter, AdapterEvent> {
+public class GetAdapterHandler extends FintCustomerObjectEntityHandler<Adapter, AdapterEvent> {
     private final AdapterService adapterService;
 
-    protected DeleteAdapterHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, AdapterService adapterService, AdapterService adapterService1) {
+    protected GetAdapterHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, AdapterService adapterService) {
         super(entityTopicService, entityProducerFactory, Adapter.class);
-        this.adapterService = adapterService1;
+        this.adapterService = adapterService;
     }
 
     @Override
     public String operation() {
-        return FintCustomerObjectEvent.Operation.DELETE.name() + "-ADAPTER";
+        return FintCustomerObjectEvent.Operation.READ.name() + "-ADAPTER";
     }
 
     @Override
@@ -29,8 +29,8 @@ public class DeleteAdapterHandler extends FintCustomerObjectEntityHandler<Adapte
         log.info("{}", consumerRecord);
         log.info("{}", organisation);
 
-        Adapter adapter = adapterService.deleteAdapter(consumerRecord.value().getObject())
-                .orElseThrow(() -> new RuntimeException("An unexpected error occurred while deleting adapter."));
-        sendDelete(adapter.getDn());
+        Adapter adapter = adapterService.getAdapterByDn(consumerRecord.value().getObject().getDn())
+                .orElseThrow(() -> new RuntimeException("An unexpected error occurred while reading adapter."));
+        send(adapter);
     }
 }

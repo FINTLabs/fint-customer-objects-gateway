@@ -1,0 +1,8 @@
+{
+  "object": {
+    "name": "adapter01",
+    "shortDescription": "This is a test adapter"
+  },
+  "orgId": "fintlabs.no",
+  "operation": "CREATE"
+}

@@ -29,7 +29,7 @@ public class AdapterService {
     @Autowired
     private AssetService assetService;
 
-    public boolean addAdapter(Adapter adapter, Organisation organisation) {
+    public Optional<Adapter> addAdapter(Adapter adapter, Organisation organisation) {
         adapterObjectService.setupAdapter(adapter, organisation);
 
         OAuthClient oAuthClient = namOAuthClientService.addOAuthClient(
@@ -46,7 +46,7 @@ public class AdapterService {
             Asset primaryAsset = assetService.getPrimaryAsset(organisation);
             assetService.linkAdapterToAsset(primaryAsset, adapter);
         }
-        return created;
+        return getAdapter(adapter.getName(), organisation.getName());
     }
 
     public List<Adapter> getAdapters(String orgName) {
@@ -65,12 +65,15 @@ public class AdapterService {
 
     public Optional<Adapter> getAdapter(String adapterName, String orgName) {
 
-        //Optional<Adapter> adapter =
+        return getAdapterByDn(adapterObjectService.getAdapterDn(adapterName, orgName));
 
+        //Optional<Adapter> adapter =
+        /*
         return Optional.ofNullable(ldapService.getEntry(
                 adapterObjectService.getAdapterDn(adapterName, orgName),
                 Adapter.class
         ));
+         */
 
         /*
         adapter.ifPresent(a -> a.getAssets().forEach(asset -> {

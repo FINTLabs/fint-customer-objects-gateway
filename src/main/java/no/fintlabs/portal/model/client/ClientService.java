@@ -5,7 +5,6 @@ import no.fintlabs.portal.ldap.LdapService;
 import no.fintlabs.portal.model.asset.Asset;
 import no.fintlabs.portal.model.asset.AssetService;
 import no.fintlabs.portal.model.organisation.Organisation;
-import no.fintlabs.portal.model.organisation.OrganisationService;
 import no.fintlabs.portal.oauth.NamOAuthClientService;
 import no.fintlabs.portal.oauth.OAuthClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +30,7 @@ public class ClientService {
     @Autowired
     private NamOAuthClientService namOAuthClientService;
 
-    public boolean addClient(Client client, Organisation organisation) {
+    public Optional<Client> addClient(Client client, Organisation organisation) {
         clientObjectService.setupClient(client, organisation);
 
         OAuthClient oAuthClient = namOAuthClientService.addOAuthClient(
@@ -49,7 +48,7 @@ public class ClientService {
             assetService.linkClientToAsset(primaryAsset, client);
         }
 
-        return created;
+        return getClient(client.getName(), organisation.getName());
     }
 
     public List<Client> getClients(String orgName) {
@@ -61,9 +60,10 @@ public class ClientService {
         return namOAuthClientService.getOAuthClient(client.getClientId()).getClientSecret();
     }
 
-    public Optional<Client> getClientBySimpleName(String clientSimpleName, Organisation organisation){
+    public Optional<Client> getClientBySimpleName(String clientSimpleName, Organisation organisation) {
         return getClientByDn(clientObjectService.getClientDn(clientObjectService.getClientFullName(clientSimpleName, organisation.getPrimaryAssetId()), organisation.getName()));
     }
+
     public Optional<Client> getClient(String clientName, String orgId) {
         return getClientByDn(clientObjectService.getClientDn(clientName, orgId));
     }
@@ -72,15 +72,19 @@ public class ClientService {
         return Optional.ofNullable(ldapService.getEntry(dn, Client.class));
     }
 
-    public boolean updateClient(Client client) {
-        return ldapService.updateEntry(client);
+    public Optional<Client> updateClient(Client client) {
+        if (ldapService.updateEntry(client)) {
+            return getClientByDn(client.getDn());
+        }
+        return Optional.empty();
     }
 
-    public void deleteClient(Client client) {
+    public Optional<Client> deleteClient(Client client) {
         if (StringUtils.hasText(client.getClientId())) {
             namOAuthClientService.removeOAuthClient(client.getClientId());
         }
         ldapService.deleteEntry(client);
+        return Optional.ofNullable(client);
     }
 
     public void resetClientPassword(Client client, String newPassword) {

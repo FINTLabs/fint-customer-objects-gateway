@@ -9,6 +9,7 @@ import no.fintlabs.portal.oauth.NamOAuthClientService;
 import no.fintlabs.portal.oauth.OAuthClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +30,7 @@ public class AdapterService {
     @Autowired
     private AssetService assetService;
 
-    public boolean addAdapter(Adapter adapter, Organisation organisation) {
+    public Optional<Adapter> addAdapter(Adapter adapter, Organisation organisation) {
         adapterObjectService.setupAdapter(adapter, organisation);
 
         OAuthClient oAuthClient = namOAuthClientService.addOAuthClient(
@@ -46,7 +47,7 @@ public class AdapterService {
             Asset primaryAsset = assetService.getPrimaryAsset(organisation);
             assetService.linkAdapterToAsset(primaryAsset, adapter);
         }
-        return created;
+        return getAdapter(adapter.getName(), organisation.getName());
     }
 
     public List<Adapter> getAdapters(String orgName) {
@@ -65,12 +66,15 @@ public class AdapterService {
 
     public Optional<Adapter> getAdapter(String adapterName, String orgName) {
 
-        //Optional<Adapter> adapter =
+        return getAdapterByDn(adapterObjectService.getAdapterDn(adapterName, orgName));
 
+        //Optional<Adapter> adapter =
+        /*
         return Optional.ofNullable(ldapService.getEntry(
                 adapterObjectService.getAdapterDn(adapterName, orgName),
                 Adapter.class
         ));
+         */
 
         /*
         adapter.ifPresent(a -> a.getAssets().forEach(asset -> {
@@ -89,13 +93,19 @@ public class AdapterService {
         return namOAuthClientService.getOAuthClient(adapter.getClientId()).getClientSecret();
     }
 
-    public boolean updateAdapter(Adapter adapter) {
-        return ldapService.updateEntry(adapter);
+    public Optional<Adapter> updateAdapter(Adapter adapter) {
+        if (ldapService.updateEntry(adapter)) {
+            return getAdapterByDn(adapter.getDn());
+        }
+        return Optional.empty();
     }
 
-    public void deleteAdapter(Adapter adapter) {
-        namOAuthClientService.removeOAuthClient(adapter.getClientId());
+    public Optional<Adapter> deleteAdapter(Adapter adapter) {
+        if (StringUtils.hasText(adapter.getClientId())) {
+            namOAuthClientService.removeOAuthClient(adapter.getClientId());
+        }
         ldapService.deleteEntry(adapter);
+        return Optional.ofNullable(adapter);
     }
 
     public void resetAdapterPassword(Adapter adapter, String newPassword) {

@@ -111,7 +111,7 @@ public class AssetService {
     }
 
     public Asset getPrimaryAsset(Organisation organisation) {
-        return getAssets(organisation).stream().filter(asset -> asset.isPrimaryAsset()).findFirst().orElse(new Asset());
+        return getAssets(organisation).stream().filter(Asset::isPrimaryAsset).findFirst().orElse(new Asset());
     }
 
     private boolean isIllegalAssetID(String assetId) {

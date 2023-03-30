@@ -1,0 +1,7 @@
+{
+  "object": {
+    "dn": "cn=adapter01@adapter.fintlabs.no,ou=adapters,ou=fintlabs_no,ou=organisations,o=fint"
+  },
+  "orgId": "fintlabs.no",
+  "operation": "READ"
+}

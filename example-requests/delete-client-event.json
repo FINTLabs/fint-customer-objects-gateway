@@ -1,0 +1,15 @@
+{
+  "object": {
+    "dn": "cn=test10@client.fintlabs.no,ou=clients,ou=fintlabs_no,ou=organisations,o=fint",
+    "name": "test10@client.fintlabs.no",
+    "shortDescription": "test10",
+    "assetId": "fintlabs.no",
+    "asset": "ou=fintlabs_no,ou=assets,ou=fintlabs_no,ou=organisations,o=fint",
+    "note": null,
+    "clientId": "735a1a9e-4613-4e8c-ae98-2d3f537c1e7a",
+    "components": [],
+    "accessPackages": []
+  },
+  "orgId": "fintlabs.no",
+  "operation": "DELETE"
+}

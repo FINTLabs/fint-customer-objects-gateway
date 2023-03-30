@@ -5,6 +5,7 @@ import no.fintlabs.portal.ldap.LdapService
 import no.fintlabs.portal.model.adapter.Adapter
 import no.fintlabs.portal.model.adapter.AdapterObjectService
 import no.fintlabs.portal.model.adapter.AdapterService
+import no.fintlabs.portal.model.asset.Asset
 import no.fintlabs.portal.model.asset.AssetService
 import no.fintlabs.portal.model.client.Client
 import no.fintlabs.portal.model.client.ClientObjectService
@@ -77,13 +78,15 @@ class OrganisationServiceSpec extends Specification {
         def organisation = ObjectFactory.newOrganisation()
 
         when:
-        def created = organisationService.createOrganisation(organisation)
+        def createdOrganisation = organisationService.createOrganisation(organisation)
 
         then:
-        created == true
-        organisation.dn != null
-        organisation.name != null
+        createdOrganisation
+        createdOrganisation.dn != null
+        createdOrganisation.name != null
         1 * ldapService.createEntry(_ as Organisation) >> true
+        1 * ldapService.getEntry(_ as String, Organisation.class) >> organisation
+        1 * ldapService.getAll(_, Asset.class) >> [new Asset(name: "name", primaryAsset: true)]
     }
 
     def "Update Organisation"() {

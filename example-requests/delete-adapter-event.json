@@ -1,0 +1,18 @@
+{
+  "object": {
+    "dn": "cn=adapter02@adapter.fintlabs.no,ou=adapters,ou=fintlabs_no,ou=organisations,o=fint",
+    "name": "adapter02@adapter.fintlabs.no",
+    "shortDescription": "This is a test adapter",
+    "note": null,
+    "clientId": "da62aba7-b242-4dc2-9cbb-6188209943b8",
+    "components": [],
+    "assets": [
+      "ou=fintlabs_no,ou=assets,ou=fintlabs_no,ou=organisations,o=fint"
+    ],
+    "assetIds": [
+      "fintlabs.no"
+    ]
+  },
+  "orgId": "fintlabs.no",
+  "operation": "DELETE"
+}

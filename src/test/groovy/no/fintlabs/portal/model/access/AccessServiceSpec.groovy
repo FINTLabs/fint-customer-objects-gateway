@@ -6,6 +6,7 @@ import no.fintlabs.portal.model.client.Client
 import no.fintlabs.portal.model.client.ClientFactory
 import no.fintlabs.portal.model.client.ClientService
 import no.fintlabs.portal.oauth.NamOAuthClientService
+import no.fintlabs.portal.utilities.SecretService
 import spock.lang.Specification
 
 class AccessServiceSpec extends Specification {
@@ -30,6 +31,7 @@ class AccessServiceSpec extends Specification {
                 ldapService,
                 assetService,
                 oauthService,
+                new SecretService()
         )
         accessObjectService = new AccessObjectService(organisationBase)
         accessService = new AccessService(

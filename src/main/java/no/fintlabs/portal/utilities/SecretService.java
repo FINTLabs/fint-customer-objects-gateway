@@ -1,4 +1,4 @@
-package no.fintlabs.portal;
+package no.fintlabs.portal.utilities;
 
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 @Component
-public class PasswordFactory {
+public class SecretService {
 
     public String encryptPassword(String password, String publicKeyString) {
         try {
@@ -28,7 +28,16 @@ public class PasswordFactory {
         }
     }
 
-    public PublicKey generatePublicKeyFromString(String publicKeyString) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public String generateSecret() {
+        String[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890-=!@#$%^&*()_+:<>{}[]".split("");
+        StringBuilder secret = new StringBuilder();
+        for (int i = 0; i < 50; i++) {
+            secret.append(characters[(int) Math.floor(Math.random() * characters.length)]);
+        }
+        return secret.toString();
+    }
+
+    private PublicKey generatePublicKeyFromString(String publicKeyString) throws NoSuchAlgorithmException, InvalidKeySpecException {
 
         return KeyFactory
                 .getInstance("RSA")
@@ -41,7 +50,7 @@ public class PasswordFactory {
                 );
     }
 
-    public String encrypt(String password, String publicKeyString) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+    private String encrypt(String password, String publicKeyString) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         Cipher encryptCipher = Cipher.getInstance("RSA");
         encryptCipher.init(Cipher.ENCRYPT_MODE, generatePublicKeyFromString(publicKeyString));
 

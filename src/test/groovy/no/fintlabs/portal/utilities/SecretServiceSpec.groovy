@@ -1,21 +1,19 @@
-package no.fintlabs.portal
+package no.fintlabs.portal.utilities
 
 import no.fintlabs.portal.testutils.DecryptionHelper
 import spock.lang.Specification
 
-import javax.crypto.Cipher
-import java.nio.charset.StandardCharsets
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 
-class PasswordFactorySpec extends Specification {
+class SecretServiceSpec extends Specification {
 
     def passwordFactory
     def publicKey
     def privateKey
 
     void setup() {
-        passwordFactory = new PasswordFactory()
+        passwordFactory = new SecretService()
 
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA")
         generator.initialize(2048)
@@ -37,5 +35,14 @@ class PasswordFactorySpec extends Specification {
         then:
         encryptPassword
         decryptedPassword == clearTextPassword
+    }
+
+    def "Generate secret should return a random string of 50 characters"() {
+        when:
+        def secret = passwordFactory.generateSecret()
+
+        then:
+        secret.length() == 50
+
     }
 }

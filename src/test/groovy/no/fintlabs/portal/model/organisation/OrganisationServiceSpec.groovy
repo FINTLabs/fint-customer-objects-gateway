@@ -17,6 +17,7 @@ import no.fintlabs.portal.model.contact.Contact
 import no.fintlabs.portal.model.contact.ContactService
 import no.fintlabs.portal.oauth.NamOAuthClientService
 import no.fintlabs.portal.testutils.ObjectFactory
+import no.fintlabs.portal.utilities.SecretService
 import spock.lang.Specification
 
 import java.util.stream.Collectors
@@ -53,7 +54,8 @@ class OrganisationServiceSpec extends Specification {
                 clientObjectService,
                 ldapService,
                 assetService,
-                oauthService
+                oauthService,
+                new SecretService()
         )
         organisationObjectService = new OrganisationObjectService(organisationBase: organisationBase, ldapService: ldapService)
         componentService = new ComponentService(

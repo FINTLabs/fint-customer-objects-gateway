@@ -6,6 +6,7 @@ import no.fintlabs.portal.model.organisation.Organisation
 import no.fintlabs.portal.oauth.NamOAuthClientService
 import no.fintlabs.portal.oauth.OAuthClient
 import no.fintlabs.portal.testutils.ObjectFactory
+import no.fintlabs.portal.utilities.SecretService
 import spock.lang.Specification
 
 class ClientServiceSpec extends Specification {
@@ -27,7 +28,8 @@ class ClientServiceSpec extends Specification {
                 clientFactory,
                 ldapService,
                 assetService,
-                oauthService
+                oauthService,
+                new SecretService()
         )
     }
 

@@ -35,7 +35,7 @@ public class CreateClientHandler extends FintCustomerObjectEntityHandler<Client,
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while creating client."));
 
         clientService.resetClientPassword(client, consumerRecord.value().getObject().getPassword());
-        client.setClientSecret(clientService.getClientSecret(client));
+        clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPassword());
 
         send(client);
     }

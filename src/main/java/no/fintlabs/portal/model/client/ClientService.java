@@ -7,6 +7,7 @@ import no.fintlabs.portal.model.asset.AssetService;
 import no.fintlabs.portal.model.organisation.Organisation;
 import no.fintlabs.portal.oauth.NamOAuthClientService;
 import no.fintlabs.portal.oauth.OAuthClient;
+import no.fintlabs.portal.utilities.SecretService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -25,11 +26,14 @@ public class ClientService {
 
     private final NamOAuthClientService namOAuthClientService;
 
-    public ClientService(ClientFactory clientFactory, LdapService ldapService, AssetService assetService, NamOAuthClientService namOAuthClientService) {
+    private final SecretService secretService;
+
+    public ClientService(ClientFactory clientFactory, LdapService ldapService, AssetService assetService, NamOAuthClientService namOAuthClientService, SecretService secretService) {
         this.clientFactory = clientFactory;
         this.ldapService = ldapService;
         this.assetService = assetService;
         this.namOAuthClientService = namOAuthClientService;
+        this.secretService = secretService;
     }
 
     public Optional<Client> addClient(Client client, Organisation organisation) {
@@ -62,6 +66,13 @@ public class ClientService {
         return namOAuthClientService.getOAuthClient(client.getClientId()).getClientSecret();
     }
 
+    public void encryptClientSecret(Client client, String publicKeyString) {
+        client.setClientSecret(secretService.encryptPassword(
+                namOAuthClientService.getOAuthClient(client.getClientId()).getClientSecret(),
+                publicKeyString
+        ));
+    }
+
     public Optional<Client> getClientBySimpleName(String clientSimpleName, Organisation organisation) {
         return getClientByDn(clientFactory.getClientDn(clientFactory.getClientFullName(clientSimpleName, organisation.getPrimaryAssetId()), organisation.getName()));
     }
@@ -89,11 +100,13 @@ public class ClientService {
         return Optional.of(client);
     }
 
-    public void resetClientPassword(Client client, String newPassword) {
-        client.setPassword(newPassword);
+    public void resetClientPassword(Client client, String privateKeyString) {
+
+        String password = secretService.generateSecret();
+        client.setPassword(password);
         boolean updateEntry = ldapService.updateEntry(client);
         log.info("Updating password is successfully {}", updateEntry);
-        client.setPassword(null);
+        client.setPassword(secretService.encryptPassword(password, privateKeyString));
     }
 
 

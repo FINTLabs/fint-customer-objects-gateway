@@ -9,6 +9,9 @@ import no.fintlabs.portal.testutils.ObjectFactory
 import no.fintlabs.portal.utilities.SecretService
 import spock.lang.Specification
 
+import java.security.KeyPair
+import java.security.KeyPairGenerator
+
 class ClientServiceSpec extends Specification {
 
     private clientService
@@ -107,8 +110,12 @@ class ClientServiceSpec extends Specification {
         given:
         def client = ObjectFactory.newClient()
 
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA")
+        generator.initialize(2048)
+        KeyPair pair = generator.generateKeyPair()
+
         when:
-        clientService.resetClientPassword(client, "FIXME")
+        clientService.resetClientPassword(client, Base64.getEncoder().encodeToString(pair.getPublic().getEncoded()))
 
         then:
         1 * ldapService.updateEntry(_ as Client)

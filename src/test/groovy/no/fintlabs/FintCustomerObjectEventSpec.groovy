@@ -7,7 +7,8 @@ class FintCustomerObjectEventSpec extends Specification {
 
     def "Get organisation object name should replace the dot in the orgId with _"() {
         given:
-        def event = ClientEvent.builder().orgId("test.no").build()
+        def event = new ClientEvent()
+        event.setOrgId("test.no")
 
         when:
         def name = event.getOrganisationObjectName()
@@ -18,7 +19,8 @@ class FintCustomerObjectEventSpec extends Specification {
 
     def "If there is multiple dots in orgId all of them should be replaced"() {
         given:
-        def event = ClientEvent.builder().orgId("test.test.test.no").build()
+        def event = new ClientEvent()
+        event.setOrgId("test.test.test.no")
 
         when:
         def name = event.getOrganisationObjectName()

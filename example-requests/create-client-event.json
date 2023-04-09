@@ -1,8 +1,8 @@
 {
   "object": {
-    "name": "test13",
-    "shortDescription": "test13",
-    "password": "topsecret"
+    "name": "test15",
+    "shortDescription": "test15",
+    "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAna4OqL9jVrLBD+WYMnnNb2iEeR/UvIuTK1vsNWzs/3cj6TVuaYbixTSpaaZHZmOUEI6M1FoWOKiwqovboEyMxo6I5Lb4hlwXQqBG+/GsyqHz+ayALVxc4Jo3ZDKzSxanz7BiPj+yWl0dD6K5M35v76eDPHhsQeYjwMISAvlrkOpojMPxjl2tS0cwnhc8O0WK0cmQ6mnp5f5HBNCalY/hH46LzjntJ7ybfavg/5tAIoEAGVp7U3c4t8o9Jaqg0A+Tb5/qiGir/qouoktvyzKhqXEL/K6UrC9fSbQIo9DsHurkOTowDzESuCYlyfY+XdVMh6MlvrhEiEl+btAsYFpRGQIDAQAB"
   },
   "orgId": "fintlabs.no",
   "operation": "CREATE"

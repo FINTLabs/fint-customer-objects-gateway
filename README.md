@@ -1,19 +1,9 @@
-# FINT Spring Boot Template project
+# FLAIS Customer Object Gateway
 
-## Setting up a new project based on the template
-### Clone
-```shell
-git clone https://github.com/FINTLabs/fint-customer-gateway.git <your project name>
-cd <your project name>
-rm -Rf .git
-git init
-```
+Supports CRUD of:
+* Client
+* Adapter
 
-Or press **Use this template** and setup your new repository
 
-### Update deployment files
-Update the following files to reflect your project
-* Dockerfile
-* k8s.yaml
-* Jenkins
+https://travistidwell.com/jsencrypt/demo/
 

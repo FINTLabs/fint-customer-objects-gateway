@@ -73,10 +73,6 @@ public class ClientService {
         ));
     }
 
-    public Optional<Client> getClientBySimpleName(String clientSimpleName, Organisation organisation) {
-        return getClientByDn(clientFactory.getClientDn(clientFactory.getClientFullName(clientSimpleName, organisation.getPrimaryAssetId()), organisation.getName()));
-    }
-
     public Optional<Client> getClient(String clientName, String orgId) {
         return getClientByDn(clientFactory.getClientDn(clientName, orgId));
     }
@@ -105,7 +101,7 @@ public class ClientService {
         String password = secretService.generateSecret();
         client.setPassword(password);
         boolean updateEntry = ldapService.updateEntry(client);
-        log.info("Updating password is successfully {}", updateEntry);
+        log.debug("Updating password is successfully: {}", updateEntry);
         client.setPassword(secretService.encryptPassword(password, privateKeyString));
     }
 

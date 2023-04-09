@@ -37,15 +37,13 @@ public class TestController {
     }
 
     @GetMapping("client")
-    public ResponseEntity<ClientEvent> generateClientEvent() throws JsonProcessingException {
+    public ResponseEntity<ClientEvent> generateClientEvent() {
         Client client = new Client();
         client.setName("test-" + RandomStringUtils.randomAlphabetic(5));
         client.setShortDescription("Test");
         client.setPublicKey(publicKey);
 
         ClientEvent clientEvent = new ClientEvent(client, "fintlabs.no", FintCustomerObjectEvent.Operation.CREATE);
-
-        clientEvent.setOperation(FintCustomerObjectEvent.Operation.CREATE);
 
         return ResponseEntity.ok(clientEvent);
     }

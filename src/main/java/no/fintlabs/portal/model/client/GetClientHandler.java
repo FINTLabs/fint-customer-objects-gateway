@@ -29,6 +29,7 @@ public class GetClientHandler extends FintCustomerObjectEntityHandler<Client, Cl
     public void accept(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
         log.info("{}", consumerRecord);
         log.info("{}", organisation);
+
         Client client = clientService.getClientByDn(consumerRecord.value().getObject().getDn())
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while reading client."));
         send(client);

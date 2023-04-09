@@ -1,4 +1,4 @@
-package no.fintlabs;
+package no.fintlabs.portal.model;
 
 import no.fintlabs.kafka.entity.EntityProducer;
 import no.fintlabs.kafka.entity.EntityProducerFactory;
@@ -64,10 +64,6 @@ public abstract class FintCustomerObjectEntityHandler<T extends BasicLdapEntry, 
         return (Class<T>) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0];
     }
-
-//    public String getEntityType() {
-//        return getParameterClass().getSimpleName().toUpperCase();
-//    }
 
     public abstract String operation();
 

@@ -1,8 +1,9 @@
 package no.fintlabs.portal.model.client;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.jackson.Jacksonized;
-import no.fintlabs.FintCustomerObjectEvent;
+import no.fintlabs.portal.model.FintCustomerObjectEvent;
 
 import javax.validation.constraints.NotNull;
 

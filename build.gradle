@@ -35,9 +35,11 @@ dependencies {
 
     implementation 'org.springframework.ldap:spring-ldap-core:2.4.1'
     implementation 'org.springframework.security.oauth:spring-security-oauth2:2.5.2.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
 
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    //implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'io.netty:netty-resolver-dns-native-macos:4.1.82.Final:osx-aarch_64'
 
     implementation 'javax.validation:validation-api'

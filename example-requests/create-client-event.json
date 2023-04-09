@@ -1,9 +1,18 @@
 {
   "object": {
-    "name": "test15",
-    "shortDescription": "test15",
-    "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAna4OqL9jVrLBD+WYMnnNb2iEeR/UvIuTK1vsNWzs/3cj6TVuaYbixTSpaaZHZmOUEI6M1FoWOKiwqovboEyMxo6I5Lb4hlwXQqBG+/GsyqHz+ayALVxc4Jo3ZDKzSxanz7BiPj+yWl0dD6K5M35v76eDPHhsQeYjwMISAvlrkOpojMPxjl2tS0cwnhc8O0WK0cmQ6mnp5f5HBNCalY/hH46LzjntJ7ybfavg/5tAIoEAGVp7U3c4t8o9Jaqg0A+Tb5/qiGir/qouoktvyzKhqXEL/K6UrC9fSbQIo9DsHurkOTowDzESuCYlyfY+XdVMh6MlvrhEiEl+btAsYFpRGQIDAQAB"
+    "dn": null,
+    "name": "test-NnRSm",
+    "shortDescription": "Test",
+    "assetId": null,
+    "asset": null,
+    "note": null,
+    "password": null,
+    "clientSecret": null,
+    "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnNcl20nznY6E/J7XRZT79NJK9JJtN6BloVTChORNKcxb6Qaffpy6yflyoG6GCl38EbxfDqx24UjzWNkSi3/3dYC2cQXj1zCp1pRoYc3Xzual0/U5HrzEamkEp9Wf8Ohs8pp6QtdZdy0ZVf62F+IT6qci6SZgtVQFbuIAsTU7kQGC4o8uXMAoAOw5KDcgYYJ73/pabzuWdHCDwGqePqQbr6LiJtDESZvTlpwwAaRpKKZlZqV3Q0ffcLVFI8XCmvaEHbK0C9hGqJyfMGx2/vjbyM5V8nNDSWVtX2t3mjk36AlG5NhMn3MAWX0EE6RCOyliyO6Y4UVXb5noGJgW5ub7wQIDAQAB",
+    "clientId": null,
+    "components": [],
+    "accessPackages": []
   },
   "orgId": "fintlabs.no",
-  "operation": "CREATE"
+  "operation": "CREATE-CLIENT"
 }

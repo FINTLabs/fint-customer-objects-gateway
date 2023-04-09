@@ -31,6 +31,10 @@ public class UpdateClientHandler extends FintCustomerObjectEntityHandler<Client,
 
         Client client = clientService.updateClient(consumerRecord.value().getObject())
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while updating client."));
+
+        clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
+        clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
+
         send(client);
     }
 }

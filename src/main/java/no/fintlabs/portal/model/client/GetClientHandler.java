@@ -32,6 +32,10 @@ public class GetClientHandler extends FintCustomerObjectEntityHandler<Client, Cl
 
         Client client = clientService.getClientByDn(consumerRecord.value().getObject().getDn())
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while reading client."));
+
+        clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
+        clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
+
         send(client);
     }
 }

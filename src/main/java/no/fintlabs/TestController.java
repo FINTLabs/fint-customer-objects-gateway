@@ -40,6 +40,24 @@ public class TestController {
 
     }
 
+    @GetMapping("client")
+    public ResponseEntity<ClientEvent> generateGetClientEvent() {
+        Client client = clientService.getClients("fintlabs_no").stream().findAny().orElseThrow();
+        client.setPublicKey(publicKey);
+        // These properties are set to null so that we only get the dn and public key in response. This is the only
+        // properties we need for a read, but we can have them all if we like.
+        client.setClientId(null);
+        client.setShortDescription(null);
+        client.setNote(null);
+        client.setAsset(null);
+        client.setAssetId(null);
+        client.setName(null);
+
+        ClientEvent clientEvent = new ClientEvent(client, "fintlabs.no", FintCustomerObjectEvent.Operation.READ);
+
+        return ResponseEntity.ok(clientEvent);
+    }
+
     @PostMapping("client")
     public ResponseEntity<ClientEvent> generateCreateClientEvent() {
         Client client = new Client();

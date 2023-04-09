@@ -15,7 +15,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.security.*;
 import java.util.Base64;
-import java.util.List;
 
 @ConditionalOnProperty(prefix = "fint.customer-object-gateway", name = "mode", havingValue = "test")
 @RestController
@@ -76,6 +75,16 @@ public class TestController {
         client.setPublicKey(publicKey);
 
         ClientEvent clientEvent = new ClientEvent(client, "fintlabs.no", FintCustomerObjectEvent.Operation.UPDATE);
+
+        return ResponseEntity.ok(clientEvent);
+    }
+
+    @DeleteMapping("client")
+    public ResponseEntity<ClientEvent> generateDeleteClientEvent() {
+        Client client = clientService.getClients("fintlabs_no").stream().findAny().orElseThrow();
+        client.setPublicKey(publicKey);
+
+        ClientEvent clientEvent = new ClientEvent(client, "fintlabs.no", FintCustomerObjectEvent.Operation.DELETE);
 
         return ResponseEntity.ok(clientEvent);
     }

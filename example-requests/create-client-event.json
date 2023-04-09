@@ -1,7 +1,8 @@
 {
   "object": {
     "name": "test13",
-    "shortDescription": "test13"
+    "shortDescription": "test13",
+    "password": "topsecret"
   },
   "orgId": "fintlabs.no",
   "operation": "CREATE"

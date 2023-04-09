@@ -3,7 +3,7 @@ package no.fintlabs.portal.model.adapter
 import no.fintlabs.portal.model.organisation.Organisation
 import spock.lang.Specification
 
-class AdapterObjectServiceSpec extends Specification {
+class AdapterFactorySpec extends Specification {
     def adapterObjectService
 
     def setup() {

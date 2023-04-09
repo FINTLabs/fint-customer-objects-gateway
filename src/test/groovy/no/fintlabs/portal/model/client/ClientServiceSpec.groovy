@@ -12,7 +12,7 @@ class ClientServiceSpec extends Specification {
 
     private clientService
     private ldapService
-    private clientObjectService
+    private clientFactory
     private oauthService
     private assetService
 
@@ -22,12 +22,12 @@ class ClientServiceSpec extends Specification {
         ldapService = Mock(LdapService)
         oauthService = Mock(NamOAuthClientService)
         assetService = Mock(AssetService)
-        clientObjectService = new ClientObjectService(organisationBase: organisationBase)
+        clientFactory = new ClientFactory(organisationBase: organisationBase)
         clientService = new ClientService(
-                clientObjectService: clientObjectService,
-                ldapService: ldapService,
-                namOAuthClientService: oauthService,
-                assetService: assetService
+                clientFactory,
+                ldapService,
+                assetService,
+                oauthService
         )
     }
 
@@ -80,12 +80,17 @@ class ClientServiceSpec extends Specification {
 
 
     def "Update Client"() {
+        given:
+        def client = ObjectFactory.newClient()
+        client.setDn("cn=name")
         when:
-        def updated = clientService.updateClient(ObjectFactory.newClient())
+        def updated = clientService.updateClient(client)
 
         then:
-        updated == true
+        updated.isPresent()
         1 * ldapService.updateEntry(_ as Client) >> true
+        1 * ldapService.getEntry(_ as String, _ as Class) >> client
+
     }
 
     def "Delete Client"() {
@@ -104,7 +109,6 @@ class ClientServiceSpec extends Specification {
         clientService.resetClientPassword(client, "FIXME")
 
         then:
-        client.password != null
         1 * ldapService.updateEntry(_ as Client)
     }
 

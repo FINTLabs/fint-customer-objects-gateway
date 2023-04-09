@@ -15,7 +15,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @ApiModel
-@ToString(exclude = {"password"})
+@ToString(exclude = {"password", "clientSecret"})
 @Entry(objectClasses = {"fintClient", "inetOrgPerson", "organizationalPerson", "person", "top"})
 public final class Client implements BasicLdapEntry {
 
@@ -45,6 +45,8 @@ public final class Client implements BasicLdapEntry {
 
     @Attribute(name = "userPassword")
     private String password;
+
+    private String clientSecret;
 
     @ApiModelProperty(value = "OAuth client id")
     @Attribute(name = "fintOAuthClientId")
@@ -125,8 +127,20 @@ public final class Client implements BasicLdapEntry {
     }
 
 
-    public void setSecret(String secret) {
-        this.password = secret;
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
+    }
+
+    public String getClientSecret() {
+        return clientSecret;
     }
 
     public String getDn() {

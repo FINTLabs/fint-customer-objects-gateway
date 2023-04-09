@@ -3,7 +3,7 @@ package no.fintlabs.portal.model.access
 import no.fintlabs.portal.ldap.LdapService
 import no.fintlabs.portal.model.asset.AssetService
 import no.fintlabs.portal.model.client.Client
-import no.fintlabs.portal.model.client.ClientObjectService
+import no.fintlabs.portal.model.client.ClientFactory
 import no.fintlabs.portal.model.client.ClientService
 import no.fintlabs.portal.oauth.NamOAuthClientService
 import spock.lang.Specification
@@ -24,12 +24,12 @@ class AccessServiceSpec extends Specification {
         ldapService = Mock(LdapService)
         oauthService = Mock(NamOAuthClientService)
         assetService = Mock(AssetService)
-        clientObjectService = new ClientObjectService(organisationBase: organisationBase)
+        clientObjectService = new ClientFactory(organisationBase: organisationBase)
         clientService = new ClientService(
-                clientObjectService: clientObjectService,
-                ldapService: ldapService,
-                namOAuthClientService: oauthService,
-                assetService: assetService
+                clientObjectService,
+                ldapService,
+                assetService,
+                oauthService,
         )
         accessObjectService = new AccessObjectService(organisationBase)
         accessService = new AccessService(

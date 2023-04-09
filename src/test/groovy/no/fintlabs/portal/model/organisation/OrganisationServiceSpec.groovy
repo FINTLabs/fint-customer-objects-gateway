@@ -8,7 +8,7 @@ import no.fintlabs.portal.model.adapter.AdapterService
 import no.fintlabs.portal.model.asset.Asset
 import no.fintlabs.portal.model.asset.AssetService
 import no.fintlabs.portal.model.client.Client
-import no.fintlabs.portal.model.client.ClientObjectService
+import no.fintlabs.portal.model.client.ClientFactory
 import no.fintlabs.portal.model.client.ClientService
 import no.fintlabs.portal.model.component.Component
 import no.fintlabs.portal.model.component.ComponentObjectService
@@ -36,7 +36,7 @@ class OrganisationServiceSpec extends Specification {
     def setup() {
         def organisationBase = "ou=org,o=fint"
         def componentBase = "ou=comp,o=fint"
-        def clientObjectService = new ClientObjectService(organisationBase: organisationBase)
+        def clientObjectService = new ClientFactory(organisationBase: organisationBase)
         def adapterObjectService = new AdapterObjectService(organisationBase: organisationBase)
 
         ldapService = Mock(LdapService)
@@ -50,10 +50,10 @@ class OrganisationServiceSpec extends Specification {
                 assetService: assetService
         )
         clientService = new ClientService(
-                clientObjectService: clientObjectService,
-                ldapService: ldapService,
-                namOAuthClientService: oauthService,
-                assetService: assetService
+                clientObjectService,
+                ldapService,
+                assetService,
+                oauthService
         )
         organisationObjectService = new OrganisationObjectService(organisationBase: organisationBase, ldapService: ldapService)
         componentService = new ComponentService(
@@ -286,20 +286,22 @@ class OrganisationServiceSpec extends Specification {
 
         then:
         contact
-        1 * contactService.getContacts() >> IntStream.rangeClosed(1, 9).mapToObj(Integer.&toString).map{ def o = ObjectFactory.newContact("11111111111"); o.nin = it * 11; o.dn = "dn="+o.nin+",ou=contacts,o=fint"; o}.collect(Collectors.toList())
+        1 * contactService.getContacts() >> IntStream.rangeClosed(1, 9).mapToObj(Integer.&toString).map { def o = ObjectFactory.newContact("11111111111")
+            o.nin = it * 11; o.dn = "dn=" + o.nin + ",ou=contacts,o=fint"; o }.collect(Collectors.toList())
     }
 
     def "Get Technical Contacts"() {
         given:
         def organisation = ObjectFactory.newOrganisation()
-        organisation.techicalContacts = [ "dn=33333333333,ou=contacts,o=fint", "dn=77777777777,ou=contacts,o=fint" ]
+        organisation.techicalContacts = ["dn=33333333333,ou=contacts,o=fint", "dn=77777777777,ou=contacts,o=fint"]
 
         when:
         def contacts = organisationService.getTechnicalContacts(organisation)
 
         then:
         contacts.size() == 2
-        1 * contactService.getContacts() >> IntStream.rangeClosed(1, 9).mapToObj(Integer.&toString).map{ def o = ObjectFactory.newContact("11111111111"); o.nin = it * 11; o.dn = "dn="+o.nin+",ou=contacts,o=fint"; o}.collect(Collectors.toList())
+        1 * contactService.getContacts() >> IntStream.rangeClosed(1, 9).mapToObj(Integer.&toString).map { def o = ObjectFactory.newContact("11111111111")
+            o.nin = it * 11; o.dn = "dn=" + o.nin + ",ou=contacts,o=fint"; o }.collect(Collectors.toList())
     }
 
     def "When adding admin role, all other roles should be removed"() {
@@ -314,7 +316,7 @@ class OrganisationServiceSpec extends Specification {
         then:
         1 * contactService.updateContact(_ as Contact) >> true
         contact.getRoles().size() == 1
-        contact.roles.every {it == 'ROLE_ADMIN@TestOrganisation'}
+        contact.roles.every { it == 'ROLE_ADMIN@TestOrganisation' }
 
     }
 
@@ -330,7 +332,7 @@ class OrganisationServiceSpec extends Specification {
         then:
         1 * contactService.updateContact(_ as Contact) >> true
         contact.getRoles().size() == 3
-        contact.roles.any {it == 'ROLE_ADMIN@TestOrganisation'}
+        contact.roles.any { it == 'ROLE_ADMIN@TestOrganisation' }
 
     }
 
@@ -346,7 +348,7 @@ class OrganisationServiceSpec extends Specification {
         then:
         1 * contactService.updateContact(_ as Contact) >> true
         contact.getRoles().size() == 3
-        !contact.roles.any {it == 'ROLE_ADMIN@TestOrganisation'}
+        !contact.roles.any { it == 'ROLE_ADMIN@TestOrganisation' }
 
     }
 

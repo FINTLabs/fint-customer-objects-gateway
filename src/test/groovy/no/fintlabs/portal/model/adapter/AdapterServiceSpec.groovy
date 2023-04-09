@@ -39,10 +39,11 @@ class AdapterServiceSpec extends Specification {
         def created = adapterService.addAdapter(adapter, new Organisation(name: "name"))
 
         then:
-        created == true
+        created.isPresent()
         adapter.dn != null
         adapter.name != null
         1 * ldapService.createEntry(_ as Adapter) >> true
+        1 * ldapService.getEntry(_ as String, _ as Class) >> adapter
         1 * oauthService.addOAuthClient(_ as String) >> new OAuthClient()
     }
 
@@ -67,12 +68,18 @@ class AdapterServiceSpec extends Specification {
     }
 
     def "Update Adapter"() {
+        given:
+        def adapter = ObjectFactory.newAdapter()
+        adapter.setDn("cn=name")
+
         when:
-        def updated = adapterService.updateAdapter(ObjectFactory.newAdapter())
+        def updated = adapterService.updateAdapter(adapter)
 
         then:
-        updated == true
+        updated.isPresent()
         1 * ldapService.updateEntry(_ as Adapter) >> true
+        1 * ldapService.getEntry(_ as String, _ as Class) >> adapter
+
     }
 
     def "Get Adapter OpenID Secret"() {

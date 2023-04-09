@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import javax.naming.Name;
 
 @Service
-public class ClientObjectService {
+public class ClientFactory {
 
     @Value("${fint.ldap.organisation-base}")
     private String organisationBase;
@@ -22,7 +22,7 @@ public class ClientObjectService {
                         .add(LdapConstants.CN, client.getName())
                         .build()
         );
-        client.setSecret(PasswordUtility.generateSecret());
+        client.setPassword(PasswordUtility.generateSecret());
     }
 
     public String getClientFullName(String clientSimpleName, String organisationprimaryAssetId) {

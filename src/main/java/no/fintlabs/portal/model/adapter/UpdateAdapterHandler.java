@@ -31,7 +31,9 @@ public class    UpdateAdapterHandler extends FintCustomerObjectEntityHandler<Ada
 
         Adapter adapter = adapterService.updateAdapter(consumerRecord.value().getObject())
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while updating adapter"));
-        send(adapter);
 
+        adapterService.resetAdapterPassword(adapter, consumerRecord.value().getObject().getPublicKey());
+        adapterService.encryptClientSecret(adapter, consumerRecord.value().getObject().getPublicKey());
+        send(adapter);
     }
 }

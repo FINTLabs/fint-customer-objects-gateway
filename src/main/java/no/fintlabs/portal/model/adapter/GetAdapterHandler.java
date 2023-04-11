@@ -31,6 +31,9 @@ public class GetAdapterHandler extends FintCustomerObjectEntityHandler<Adapter, 
 
         Adapter adapter = adapterService.getAdapterByDn(consumerRecord.value().getObject().getDn())
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while reading adapter."));
+
+        adapterService.resetAdapterPassword(adapter, consumerRecord.value().getObject().getPublicKey());
+        adapterService.encryptClientSecret(adapter, consumerRecord.value().getObject().getPublicKey());
         send(adapter);
     }
 }

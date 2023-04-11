@@ -20,10 +20,10 @@ class AdapterServiceSpec extends Specification {
         def organisationBase = "ou=org,o=fint"
         ldapService = Mock(LdapService)
         assetService = Mock(AssetService)
-        adapterObjectService = new AdapterObjectService(organisationBase: organisationBase)
+        adapterObjectService = new AdapterFactory(organisationBase: organisationBase)
         oauthService = Mock(NamOAuthClientService)
         adapterService = new AdapterService(
-                adapterObjectService: adapterObjectService,
+                adapterFactory: adapterObjectService,
                 ldapService: ldapService,
                 namOAuthClientService: oauthService,
                 assetService: assetService

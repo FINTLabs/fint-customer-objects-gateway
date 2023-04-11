@@ -2,11 +2,14 @@ package no.fintlabs.portal.model.adapter;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import no.fintlabs.portal.ldap.BasicLdapEntry;
 import org.springframework.ldap.odm.annotations.Attribute;
 import org.springframework.ldap.odm.annotations.Entry;
 import org.springframework.ldap.odm.annotations.Id;
+import org.springframework.ldap.odm.annotations.Transient;
 import org.springframework.ldap.support.LdapNameBuilder;
 
 import javax.naming.Name;
@@ -37,6 +40,14 @@ public final class Adapter implements BasicLdapEntry {
     @Attribute(name = "userPassword")
     private String password;
 
+    @Transient
+    private String clientSecret;
+
+    @Transient
+    @Getter
+    @Setter
+    private String publicKey;
+
     @ApiModelProperty(value = "OAuth client id")
     @Attribute(name = "fintOAuthClientId")
     private String clientId;
@@ -63,7 +74,7 @@ public final class Adapter implements BasicLdapEntry {
     }
 
     public void addAssetId(String assetId) {
-        if (!assetIds.stream().anyMatch(assetId::equalsIgnoreCase)) {
+        if (assetIds.stream().noneMatch(assetId::equalsIgnoreCase)) {
             assetIds.add(assetId);
         }
     }
@@ -74,7 +85,7 @@ public final class Adapter implements BasicLdapEntry {
 
 
     public void addComponent(String componentDn) {
-        if (!components.stream().anyMatch(componentDn::equalsIgnoreCase)) {
+        if (components.stream().noneMatch(componentDn::equalsIgnoreCase)) {
             components.add(componentDn);
         }
     }
@@ -84,7 +95,7 @@ public final class Adapter implements BasicLdapEntry {
     }
 
     public void addAsset(String assetId) {
-        if (!assets.stream().anyMatch(assetId::equalsIgnoreCase)) {
+        if (assets.stream().noneMatch(assetId::equalsIgnoreCase)) {
             assets.add(assetId);
         }
     }
@@ -122,8 +133,20 @@ public final class Adapter implements BasicLdapEntry {
         this.note = note;
     }
 
-    public void setSecret(String secret) {
-        this.password = secret;
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
+    }
+
+    public String getClientSecret() {
+        return clientSecret;
     }
 
     public String getDn() {

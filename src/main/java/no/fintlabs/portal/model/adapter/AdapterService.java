@@ -7,7 +7,7 @@ import no.fintlabs.portal.model.asset.AssetService;
 import no.fintlabs.portal.model.organisation.Organisation;
 import no.fintlabs.portal.oauth.NamOAuthClientService;
 import no.fintlabs.portal.oauth.OAuthClient;
-import org.springframework.beans.factory.annotation.Autowired;
+import no.fintlabs.portal.utilities.SecretService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -18,20 +18,26 @@ import java.util.Optional;
 @Service
 public class AdapterService {
 
-    @Autowired
-    private AdapterObjectService adapterObjectService;
+    private final AdapterFactory adapterFactory;
 
-    @Autowired
-    private LdapService ldapService;
+    private final LdapService ldapService;
 
-    @Autowired
-    private NamOAuthClientService namOAuthClientService;
+    private final NamOAuthClientService namOAuthClientService;
 
-    @Autowired
-    private AssetService assetService;
+    private final AssetService assetService;
+
+    private final SecretService secretService;
+
+    public AdapterService(AdapterFactory adapterFactory, LdapService ldapService, NamOAuthClientService namOAuthClientService, AssetService assetService, SecretService secretService) {
+        this.adapterFactory = adapterFactory;
+        this.ldapService = ldapService;
+        this.namOAuthClientService = namOAuthClientService;
+        this.assetService = assetService;
+        this.secretService = secretService;
+    }
 
     public Optional<Adapter> addAdapter(Adapter adapter, Organisation organisation) {
-        adapterObjectService.setupAdapter(adapter, organisation);
+        adapterFactory.setupAdapter(adapter, organisation);
 
         OAuthClient oAuthClient = namOAuthClientService.addOAuthClient(
                 String.format("a_%s", adapter.getName()
@@ -51,38 +57,12 @@ public class AdapterService {
     }
 
     public List<Adapter> getAdapters(String orgName) {
-        //List<Adapter> adapters =
-
-        return ldapService.getAll(adapterObjectService.getAdapterBase(orgName).toString(), Adapter.class);
-
-                /*
-        adapters.forEach(adapter -> adapter.getAssets().forEach(asset -> {
-            assetService.getAsset(asset).ifPresent(a -> adapter.addAssetId(a.getAssetId()));
-        }));
-
-        return adapters;
-        */
+        return ldapService.getAll(adapterFactory.getAdapterBase(orgName).toString(), Adapter.class);
     }
 
     public Optional<Adapter> getAdapter(String adapterName, String orgName) {
 
-        return getAdapterByDn(adapterObjectService.getAdapterDn(adapterName, orgName));
-
-        //Optional<Adapter> adapter =
-        /*
-        return Optional.ofNullable(ldapService.getEntry(
-                adapterObjectService.getAdapterDn(adapterName, orgName),
-                Adapter.class
-        ));
-         */
-
-        /*
-        adapter.ifPresent(a -> a.getAssets().forEach(asset -> {
-            assetService.getAsset(asset).ifPresent(aa -> a.addAssetId(aa.getAssetId()));
-        }));
-        */
-
-        //return adapter;
+        return getAdapterByDn(adapterFactory.getAdapterDn(adapterName, orgName));
     }
 
     public Optional<Adapter> getAdapterByDn(String dn) {
@@ -105,12 +85,22 @@ public class AdapterService {
             namOAuthClientService.removeOAuthClient(adapter.getClientId());
         }
         ldapService.deleteEntry(adapter);
-        return Optional.ofNullable(adapter);
+        return Optional.of(adapter);
     }
 
-    public void resetAdapterPassword(Adapter adapter, String newPassword) {
-        adapter.setSecret(newPassword);
-        ldapService.updateEntry(adapter);
+    public void encryptClientSecret(Adapter adapter, String publicKeyString) {
+        adapter.setClientSecret(secretService.encryptPassword(
+                namOAuthClientService.getOAuthClient(adapter.getClientId()).getClientSecret(),
+                publicKeyString
+        ));
+    }
+
+    public void resetAdapterPassword(Adapter adapter, String privateKeyString) {
+        String password = secretService.generateSecret();
+        adapter.setPassword(password);
+        boolean updateEntry = ldapService.updateEntry(adapter);
+        log.debug("Updating password is successfully: {}", updateEntry);
+        adapter.setPassword(secretService.encryptPassword(password, privateKeyString));
     }
 
 }

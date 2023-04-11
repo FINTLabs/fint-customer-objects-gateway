@@ -31,6 +31,10 @@ public class CreateAdapterHandler extends FintCustomerObjectEntityHandler<Adapte
 
         Adapter adapter = adapterService.addAdapter(consumerRecord.value().getObject(), organisation)
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while creating adapter."));
+
+        adapterService.resetAdapterPassword(adapter, consumerRecord.value().getObject().getPublicKey());
+        adapterService.encryptClientSecret(adapter, consumerRecord.value().getObject().getPublicKey());
+
         send(adapter);
     }
 }

@@ -18,8 +18,8 @@ import java.util.Base64;
 
 @ConditionalOnProperty(prefix = "fint.customer-object-gateway", name = "mode", havingValue = "test")
 @RestController
-@RequestMapping("/")
-public class TestController {
+@RequestMapping("client")
+public class TestClientController {
 
     private final SecretService secretService;
     private final PrivateKey privateKey;
@@ -27,7 +27,7 @@ public class TestController {
 
     private final ClientService clientService;
 
-    public TestController(SecretService secretService, ClientService clientService) throws NoSuchAlgorithmException {
+    public TestClientController(SecretService secretService, ClientService clientService) throws NoSuchAlgorithmException {
         this.secretService = secretService;
         this.clientService = clientService;
 
@@ -39,7 +39,7 @@ public class TestController {
 
     }
 
-    @GetMapping("client")
+    @GetMapping
     public ResponseEntity<ClientEvent> generateGetClientEvent() {
         Client client = clientService.getClients("fintlabs_no").stream().findAny().orElseThrow();
         client.setPublicKey(publicKey);
@@ -57,7 +57,7 @@ public class TestController {
         return ResponseEntity.ok(clientEvent);
     }
 
-    @PostMapping("client")
+    @PostMapping()
     public ResponseEntity<ClientEvent> generateCreateClientEvent() {
         Client client = new Client();
         client.setName("test-" + RandomStringUtils.randomAlphabetic(5));
@@ -69,7 +69,7 @@ public class TestController {
         return ResponseEntity.ok(clientEvent);
     }
 
-    @PutMapping("client")
+    @PutMapping()
     public ResponseEntity<ClientEvent> generateUpdateClientEvent() {
         Client client = clientService.getClients("fintlabs_no").stream().findAny().orElseThrow();
         client.setPublicKey(publicKey);
@@ -79,7 +79,7 @@ public class TestController {
         return ResponseEntity.ok(clientEvent);
     }
 
-    @DeleteMapping("client")
+    @DeleteMapping()
     public ResponseEntity<ClientEvent> generateDeleteClientEvent() {
         Client client = clientService.getClients("fintlabs_no").stream().findAny().orElseThrow();
         client.setPublicKey(publicKey);
@@ -89,7 +89,7 @@ public class TestController {
         return ResponseEntity.ok(clientEvent);
     }
 
-    @PostMapping("client/decrypt")
+    @PostMapping("decrypt")
     public ResponseEntity<Client> decryptClient(@RequestBody Client client) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 
         client.setClientSecret(secretService.decrypt(privateKey, client.getClientSecret()));

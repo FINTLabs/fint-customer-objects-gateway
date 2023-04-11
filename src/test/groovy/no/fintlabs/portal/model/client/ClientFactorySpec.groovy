@@ -1,13 +1,14 @@
 package no.fintlabs.portal.model.client
 
 import no.fintlabs.portal.model.organisation.Organisation
+import no.fintlabs.portal.utilities.SecretService
 import spock.lang.Specification
 
 class ClientFactorySpec extends Specification {
     def clientFactory
 
     void setup() {
-        clientFactory = new ClientFactory(organisationBase: "ou=org,o=fint")
+        clientFactory = new ClientFactory(new SecretService(), "ou=org,o=fint")
     }
 
     def "Setup Client"() {

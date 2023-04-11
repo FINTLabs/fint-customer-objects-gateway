@@ -1,7 +1,7 @@
 package no.fintlabs.portal.model.adapter;
 
-import no.fintlabs.FintCustomerObjectEntityHandler;
-import no.fintlabs.FintCustomerObjectEventHandler;
+import no.fintlabs.portal.model.FintCustomerObjectEntityHandler;
+import no.fintlabs.portal.model.FintCustomerObjectEventHandler;
 import no.fintlabs.kafka.event.EventConsumerFactoryService;
 import no.fintlabs.kafka.event.topic.EventTopicService;
 import no.fintlabs.portal.model.organisation.OrganisationService;

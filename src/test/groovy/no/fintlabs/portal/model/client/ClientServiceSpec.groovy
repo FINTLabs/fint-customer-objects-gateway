@@ -6,13 +6,17 @@ import no.fintlabs.portal.model.organisation.Organisation
 import no.fintlabs.portal.oauth.NamOAuthClientService
 import no.fintlabs.portal.oauth.OAuthClient
 import no.fintlabs.portal.testutils.ObjectFactory
+import no.fintlabs.portal.utilities.SecretService
 import spock.lang.Specification
+
+import java.security.KeyPair
+import java.security.KeyPairGenerator
 
 class ClientServiceSpec extends Specification {
 
     private clientService
     private ldapService
-    private clientObjectService
+    private clientFactory
     private oauthService
     private assetService
 
@@ -22,12 +26,13 @@ class ClientServiceSpec extends Specification {
         ldapService = Mock(LdapService)
         oauthService = Mock(NamOAuthClientService)
         assetService = Mock(AssetService)
-        clientObjectService = new ClientObjectService(organisationBase: organisationBase)
+        clientFactory = new ClientFactory(new SecretService(), organisationBase)
         clientService = new ClientService(
-                clientObjectService: clientObjectService,
-                ldapService: ldapService,
-                namOAuthClientService: oauthService,
-                assetService: assetService
+                clientFactory,
+                ldapService,
+                assetService,
+                oauthService,
+                new SecretService()
         )
     }
 
@@ -80,12 +85,17 @@ class ClientServiceSpec extends Specification {
 
 
     def "Update Client"() {
+        given:
+        def client = ObjectFactory.newClient()
+        client.setDn("cn=name")
         when:
-        def updated = clientService.updateClient(ObjectFactory.newClient())
+        def updated = clientService.updateClient(client)
 
         then:
-        updated == true
+        updated.isPresent()
         1 * ldapService.updateEntry(_ as Client) >> true
+        1 * ldapService.getEntry(_ as String, _ as Class) >> client
+
     }
 
     def "Delete Client"() {
@@ -100,11 +110,14 @@ class ClientServiceSpec extends Specification {
         given:
         def client = ObjectFactory.newClient()
 
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA")
+        generator.initialize(2048)
+        KeyPair pair = generator.generateKeyPair()
+
         when:
-        clientService.resetClientPassword(client, "FIXME")
+        clientService.resetClientPassword(client, Base64.getEncoder().encodeToString(pair.getPublic().getEncoded()))
 
         then:
-        client.password != null
         1 * ldapService.updateEntry(_ as Client)
     }
 

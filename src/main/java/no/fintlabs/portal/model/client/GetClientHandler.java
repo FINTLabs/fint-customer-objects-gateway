@@ -1,8 +1,8 @@
 package no.fintlabs.portal.model.client;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.FintCustomerObjectEntityHandler;
-import no.fintlabs.FintCustomerObjectEvent;
+import no.fintlabs.portal.model.FintCustomerObjectEntityHandler;
+import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.kafka.entity.EntityProducerFactory;
 import no.fintlabs.kafka.entity.topic.EntityTopicService;
 import no.fintlabs.portal.model.organisation.Organisation;
@@ -29,8 +29,13 @@ public class GetClientHandler extends FintCustomerObjectEntityHandler<Client, Cl
     public void accept(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
         log.info("{}", consumerRecord);
         log.info("{}", organisation);
+
         Client client = clientService.getClientByDn(consumerRecord.value().getObject().getDn())
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while reading client."));
+
+        clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
+        clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
+
         send(client);
     }
 }

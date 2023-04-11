@@ -1,4 +1,4 @@
-package no.fintlabs;
+package no.fintlabs.portal.model;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.kafka.event.EventConsumerFactoryService;
@@ -77,7 +77,7 @@ public abstract class FintCustomerObjectEventHandler<E extends FintCustomerObjec
         log.info("Event received for : {}", consumerRecord.value().getObject());
         try {
             actionsHandlerMap
-                    .get(consumerRecord.value().getOperation())
+                    .get(consumerRecord.value().getOperationWithType())
                     .accept(consumerRecord,
                             organisationService
                                     .getOrganisation(consumerRecord.value().getOrganisationObjectName())

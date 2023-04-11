@@ -1,8 +1,8 @@
 package no.fintlabs.portal.model.client;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.FintCustomerObjectEntityHandler;
-import no.fintlabs.FintCustomerObjectEvent;
+import no.fintlabs.portal.model.FintCustomerObjectEntityHandler;
+import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.kafka.entity.EntityProducerFactory;
 import no.fintlabs.kafka.entity.topic.EntityTopicService;
 import no.fintlabs.portal.model.organisation.Organisation;
@@ -31,6 +31,10 @@ public class UpdateClientHandler extends FintCustomerObjectEntityHandler<Client,
 
         Client client = clientService.updateClient(consumerRecord.value().getObject())
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while updating client."));
+
+        clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
+        clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
+
         send(client);
     }
 }

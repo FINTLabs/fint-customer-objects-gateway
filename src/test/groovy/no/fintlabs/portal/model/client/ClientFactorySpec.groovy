@@ -1,13 +1,14 @@
 package no.fintlabs.portal.model.client
 
 import no.fintlabs.portal.model.organisation.Organisation
+import no.fintlabs.portal.utilities.SecretService
 import spock.lang.Specification
 
-class ClientObjectServiceSpec extends Specification {
-    def clientObjectService
+class ClientFactorySpec extends Specification {
+    def clientFactory
 
     void setup() {
-        clientObjectService = new ClientObjectService(organisationBase: "ou=org,o=fint")
+        clientFactory = new ClientFactory(new SecretService(), "ou=org,o=fint")
     }
 
     def "Setup Client"() {
@@ -15,7 +16,7 @@ class ClientObjectServiceSpec extends Specification {
         def client = new Client(name: "TestClient")
 
         when:
-        clientObjectService.setupClient(client, new Organisation(name: "orgName"))
+        clientFactory.setupClient(client, new Organisation(name: "orgName"))
 
         then:
         client.password != null
@@ -25,7 +26,7 @@ class ClientObjectServiceSpec extends Specification {
 
     def "Get Client Base"() {
         when:
-        def dn = clientObjectService.getClientBase("orgUuid")
+        def dn = clientFactory.getClientBase("orgUuid")
 
         then:
         dn != null
@@ -34,7 +35,7 @@ class ClientObjectServiceSpec extends Specification {
 
     def "Get Client Dn"() {
         when:
-        def dn = clientObjectService.getClientDn("clientUuid", "orgUuid")
+        def dn = clientFactory.getClientDn("clientUuid", "orgUuid")
 
         then:
         dn != null

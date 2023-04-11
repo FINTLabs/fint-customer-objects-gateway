@@ -7,9 +7,12 @@ fint:
       domain-context: flais
     application-id: ${fint.application-id}
 spring:
-  mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
+#  mvc:
+#    pathmatch:
+#      matching-strategy: ant_path_matcher
   kafka:
     consumer:
       group-id: ${fint.application-id}
+
+  jackson:
+    default-property-inclusion: non_null

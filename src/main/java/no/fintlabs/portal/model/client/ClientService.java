@@ -7,7 +7,7 @@ import no.fintlabs.portal.model.asset.AssetService;
 import no.fintlabs.portal.model.organisation.Organisation;
 import no.fintlabs.portal.oauth.NamOAuthClientService;
 import no.fintlabs.portal.oauth.OAuthClient;
-import org.springframework.beans.factory.annotation.Autowired;
+import no.fintlabs.portal.utilities.SecretService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -18,20 +18,26 @@ import java.util.Optional;
 @Service
 public class ClientService {
 
-    @Autowired
-    private ClientObjectService clientObjectService;
+    private final ClientFactory clientFactory;
 
-    @Autowired
-    private LdapService ldapService;
+    private final LdapService ldapService;
 
-    @Autowired
-    private AssetService assetService;
+    private final AssetService assetService;
 
-    @Autowired
-    private NamOAuthClientService namOAuthClientService;
+    private final NamOAuthClientService namOAuthClientService;
+
+    private final SecretService secretService;
+
+    public ClientService(ClientFactory clientFactory, LdapService ldapService, AssetService assetService, NamOAuthClientService namOAuthClientService, SecretService secretService) {
+        this.clientFactory = clientFactory;
+        this.ldapService = ldapService;
+        this.assetService = assetService;
+        this.namOAuthClientService = namOAuthClientService;
+        this.secretService = secretService;
+    }
 
     public Optional<Client> addClient(Client client, Organisation organisation) {
-        clientObjectService.setupClient(client, organisation);
+        clientFactory.setupClient(client, organisation);
 
         OAuthClient oAuthClient = namOAuthClientService.addOAuthClient(
                 String.format("c_%s", client.getName()
@@ -53,19 +59,22 @@ public class ClientService {
 
     public List<Client> getClients(String orgName) {
 
-        return ldapService.getAll(clientObjectService.getClientBase(orgName).toString(), Client.class);
+        return ldapService.getAll(clientFactory.getClientBase(orgName).toString(), Client.class);
     }
 
     public String getClientSecret(Client client) {
         return namOAuthClientService.getOAuthClient(client.getClientId()).getClientSecret();
     }
 
-    public Optional<Client> getClientBySimpleName(String clientSimpleName, Organisation organisation) {
-        return getClientByDn(clientObjectService.getClientDn(clientObjectService.getClientFullName(clientSimpleName, organisation.getPrimaryAssetId()), organisation.getName()));
+    public void encryptClientSecret(Client client, String publicKeyString) {
+        client.setClientSecret(secretService.encryptPassword(
+                namOAuthClientService.getOAuthClient(client.getClientId()).getClientSecret(),
+                publicKeyString
+        ));
     }
 
     public Optional<Client> getClient(String clientName, String orgId) {
-        return getClientByDn(clientObjectService.getClientDn(clientName, orgId));
+        return getClientByDn(clientFactory.getClientDn(clientName, orgId));
     }
 
     public Optional<Client> getClientByDn(String dn) {
@@ -84,12 +93,16 @@ public class ClientService {
             namOAuthClientService.removeOAuthClient(client.getClientId());
         }
         ldapService.deleteEntry(client);
-        return Optional.ofNullable(client);
+        return Optional.of(client);
     }
 
-    public void resetClientPassword(Client client, String newPassword) {
-        client.setSecret(newPassword);
-        ldapService.updateEntry(client);
+    public void resetClientPassword(Client client, String privateKeyString) {
+
+        String password = secretService.generateSecret();
+        client.setPassword(password);
+        boolean updateEntry = ldapService.updateEntry(client);
+        log.debug("Updating password is successfully: {}", updateEntry);
+        client.setPassword(secretService.encryptPassword(password, privateKeyString));
     }
 
 

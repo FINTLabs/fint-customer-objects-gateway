@@ -2,11 +2,15 @@ package no.fintlabs.portal.model.client;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import no.fintlabs.portal.ldap.BasicLdapEntry;
 import org.springframework.ldap.odm.annotations.Attribute;
 import org.springframework.ldap.odm.annotations.Entry;
 import org.springframework.ldap.odm.annotations.Id;
+import org.springframework.ldap.odm.annotations.Transient;
 import org.springframework.ldap.support.LdapNameBuilder;
 
 import javax.naming.Name;
@@ -15,7 +19,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @ApiModel
-@ToString(exclude = {"password"})
+@ToString(exclude = {"password", "clientSecret"})
 @Entry(objectClasses = {"fintClient", "inetOrgPerson", "organizationalPerson", "person", "top"})
 public final class Client implements BasicLdapEntry {
 
@@ -45,6 +49,14 @@ public final class Client implements BasicLdapEntry {
 
     @Attribute(name = "userPassword")
     private String password;
+
+    @Transient
+    private String clientSecret;
+
+    @Transient
+    @Getter
+    @Setter
+    private String publicKey;
 
     @ApiModelProperty(value = "OAuth client id")
     @Attribute(name = "fintOAuthClientId")
@@ -125,8 +137,20 @@ public final class Client implements BasicLdapEntry {
     }
 
 
-    public void setSecret(String secret) {
-        this.password = secret;
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
+    }
+
+    public String getClientSecret() {
+        return clientSecret;
     }
 
     public String getDn() {

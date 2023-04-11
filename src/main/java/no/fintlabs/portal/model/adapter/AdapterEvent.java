@@ -1,16 +1,14 @@
 package no.fintlabs.portal.model.adapter;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.extern.jackson.Jacksonized;
-import no.fintlabs.FintCustomerObjectEvent;
-
-import javax.validation.constraints.NotNull;
+import no.fintlabs.portal.model.FintCustomerObjectEvent;
 
 @Getter
-@Jacksonized
+@AllArgsConstructor
 public class AdapterEvent extends FintCustomerObjectEvent<Adapter> {
 
-    public AdapterEvent(Adapter object, String orgId, @NotNull Operation operation) {
+    public AdapterEvent(Adapter object, String orgId, Operation operation) {
         super(object, orgId, operation);
     }
 }

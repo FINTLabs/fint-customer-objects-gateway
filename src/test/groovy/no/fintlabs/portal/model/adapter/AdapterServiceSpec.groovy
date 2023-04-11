@@ -6,7 +6,11 @@ import no.fintlabs.portal.model.organisation.Organisation
 import no.fintlabs.portal.oauth.NamOAuthClientService
 import no.fintlabs.portal.oauth.OAuthClient
 import no.fintlabs.portal.testutils.ObjectFactory
+import no.fintlabs.portal.utilities.SecretService
 import spock.lang.Specification
+
+import java.security.KeyPair
+import java.security.KeyPairGenerator
 
 class AdapterServiceSpec extends Specification {
 
@@ -20,13 +24,14 @@ class AdapterServiceSpec extends Specification {
         def organisationBase = "ou=org,o=fint"
         ldapService = Mock(LdapService)
         assetService = Mock(AssetService)
-        adapterObjectService = new AdapterObjectService(organisationBase: organisationBase)
+        adapterObjectService = new AdapterFactory(new SecretService(), organisationBase)
         oauthService = Mock(NamOAuthClientService)
         adapterService = new AdapterService(
-                adapterObjectService: adapterObjectService,
-                ldapService: ldapService,
-                namOAuthClientService: oauthService,
-                assetService: assetService
+                adapterObjectService,
+                ldapService,
+                oauthService,
+                assetService,
+                new SecretService()
         )
 
     }
@@ -39,10 +44,11 @@ class AdapterServiceSpec extends Specification {
         def created = adapterService.addAdapter(adapter, new Organisation(name: "name"))
 
         then:
-        created == true
+        created.isPresent()
         adapter.dn != null
         adapter.name != null
         1 * ldapService.createEntry(_ as Adapter) >> true
+        1 * ldapService.getEntry(_ as String, _ as Class) >> adapter
         1 * oauthService.addOAuthClient(_ as String) >> new OAuthClient()
     }
 
@@ -67,12 +73,18 @@ class AdapterServiceSpec extends Specification {
     }
 
     def "Update Adapter"() {
+        given:
+        def adapter = ObjectFactory.newAdapter()
+        adapter.setDn("cn=name")
+
         when:
-        def updated = adapterService.updateAdapter(ObjectFactory.newAdapter())
+        def updated = adapterService.updateAdapter(adapter)
 
         then:
-        updated == true
+        updated.isPresent()
         1 * ldapService.updateEntry(_ as Adapter) >> true
+        1 * ldapService.getEntry(_ as String, _ as Class) >> adapter
+
     }
 
     def "Get Adapter OpenID Secret"() {
@@ -98,8 +110,12 @@ class AdapterServiceSpec extends Specification {
         given:
         def adapter = ObjectFactory.newAdapter()
 
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA")
+        generator.initialize(2048)
+        KeyPair pair = generator.generateKeyPair()
+
         when:
-        adapterService.resetAdapterPassword(adapter, "FIXME")
+        adapterService.resetAdapterPassword(adapter, Base64.getEncoder().encodeToString(pair.getPublic().getEncoded()))
 
         then:
         1 * ldapService.updateEntry(_ as Adapter)

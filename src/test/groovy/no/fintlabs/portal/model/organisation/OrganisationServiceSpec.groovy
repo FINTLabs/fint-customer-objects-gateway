@@ -37,18 +37,20 @@ class OrganisationServiceSpec extends Specification {
     def setup() {
         def organisationBase = "ou=org,o=fint"
         def componentBase = "ou=comp,o=fint"
-        def clientObjectService = new ClientFactory(organisationBase: organisationBase)
-        def adapterObjectService = new AdapterFactory(organisationBase: organisationBase)
+        def clientObjectService = new ClientFactory(new SecretService(), organisationBase)
+        def adapterObjectService = new AdapterFactory(new SecretService(), organisationBase)
 
         ldapService = Mock(LdapService)
         oauthService = Mock(NamOAuthClientService)
         assetService = new AssetService(ldapService: ldapService)
         contactService = Mock(ContactService)
         adapterService = new AdapterService(
-                adapterFactory: adapterObjectService,
-                ldapService: ldapService,
-                namOAuthClientService: oauthService,
-                assetService: assetService
+                adapterObjectService,
+                ldapService,
+                oauthService,
+                assetService,
+                new SecretService()
+
         )
         clientService = new ClientService(
                 clientObjectService,

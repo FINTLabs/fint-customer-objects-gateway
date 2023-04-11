@@ -25,7 +25,7 @@ class AccessServiceSpec extends Specification {
         ldapService = Mock(LdapService)
         oauthService = Mock(NamOAuthClientService)
         assetService = Mock(AssetService)
-        clientObjectService = new ClientFactory(organisationBase: organisationBase)
+        clientObjectService = new ClientFactory(new SecretService(), organisationBase)
         clientService = new ClientService(
                 clientObjectService,
                 ldapService,

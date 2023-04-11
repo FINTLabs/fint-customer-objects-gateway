@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class UpdateAdapterHandler extends FintCustomerObjectEntityHandler<Adapter, AdapterEvent> {
+public class    UpdateAdapterHandler extends FintCustomerObjectEntityHandler<Adapter, AdapterEvent> {
     private final AdapterService adapterService;
 
     protected UpdateAdapterHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, AdapterService adapterService) {

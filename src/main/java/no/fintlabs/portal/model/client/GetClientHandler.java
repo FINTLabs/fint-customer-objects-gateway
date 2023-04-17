@@ -1,17 +1,18 @@
 package no.fintlabs.portal.model.client;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.portal.model.FintCustomerObjectEntityHandler;
-import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.kafka.entity.EntityProducerFactory;
 import no.fintlabs.kafka.entity.topic.EntityTopicService;
+import no.fintlabs.portal.exceptions.ObjectNotFoundException;
+import no.fintlabs.portal.model.FintCustomerObjectEvent;
+import no.fintlabs.portal.model.FintCustomerObjectRequestHandler;
 import no.fintlabs.portal.model.organisation.Organisation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class GetClientHandler extends FintCustomerObjectEntityHandler<Client, ClientEvent> {
+public class GetClientHandler extends FintCustomerObjectRequestHandler<Client, ClientEvent> {
 
     private final ClientService clientService;
 
@@ -26,16 +27,19 @@ public class GetClientHandler extends FintCustomerObjectEntityHandler<Client, Cl
     }
 
     @Override
-    public void accept(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
+    public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
         log.info("{}", consumerRecord);
         log.info("{}", organisation);
 
-        Client client = clientService.getClientByDn(consumerRecord.value().getObject().getDn())
-                .orElseThrow(() -> new RuntimeException("An unexpected error occurred while reading client."));
+        return clientService.getClientByDn(consumerRecord.value().getObject().getDn())
+                .map(client -> {
+                    clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
+                    clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
+                    send(client);
 
-        clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
-        clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
+                    return client;
+                })
+                .orElseThrow(() -> new RuntimeException("Unable to find client: " + consumerRecord.value().getObject().getDn()));
 
-        send(client);
     }
 }

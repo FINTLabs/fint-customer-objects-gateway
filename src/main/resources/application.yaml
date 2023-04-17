@@ -1,6 +1,6 @@
 fint:
   application-id: fint-customer-gateway
-  org-id: fintlabs.no
+  org-id: flais.io
   kafka:
     topic:
       org-id: ${fint.org-id}

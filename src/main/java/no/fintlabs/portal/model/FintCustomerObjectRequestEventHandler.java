@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-public abstract class FintCustomerObjectEventHandler<E extends FintCustomerObjectEvent<T>, T extends BasicLdapEntry> {
+public abstract class FintCustomerObjectRequestEventHandler<E extends FintCustomerObjectEvent<T>, T extends BasicLdapEntry> {
 
     private final EventTopicService eventTopicService;
     private final EventConsumerFactoryService consumer;
@@ -30,10 +30,10 @@ public abstract class FintCustomerObjectEventHandler<E extends FintCustomerObjec
 
     private final String objectType;
 
-    public FintCustomerObjectEventHandler(EventTopicService eventTopicService,
-                                          EventConsumerFactoryService consumer,
-                                          OrganisationService organisationService,
-                                          Collection<FintCustomerObjectEntityHandler<T, E>> handlers, Class<T> objectType) {
+    public FintCustomerObjectRequestEventHandler(EventTopicService eventTopicService,
+                                                 EventConsumerFactoryService consumer,
+                                                 OrganisationService organisationService,
+                                                 Collection<FintCustomerObjectEntityHandler<T, E>> handlers, Class<T> objectType) {
         this.eventTopicService = eventTopicService;
         this.consumer = consumer;
         this.organisationService = organisationService;
@@ -48,6 +48,7 @@ public abstract class FintCustomerObjectEventHandler<E extends FintCustomerObjec
         return (Class<E>) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0];
     }
+
 
     @PostConstruct
     public void init() {
@@ -91,6 +92,32 @@ public abstract class FintCustomerObjectEventHandler<E extends FintCustomerObjec
         }
 
     }
+
+    private void dummy() {
+
+    }
+//    @Bean
+//    public ConcurrentMessageListenerContainer<String, ClientEvent>
+//    integrationBySourceApplicationIdAndSourceApplicationIntegrationIdRequestConsumer(
+//            RequestConsumerFactoryService requestConsumerFactoryService,
+//            RequestTopicService requestTopicService
+//    ) {
+//        RequestTopicNameParameters requestTopicNameParameters = RequestTopicNameParameters
+//                .builder()
+//                .domainContext("fint-customer-objects")
+//                .resource("client")
+//                //.parameterName("source-application-id-and-source-application-integration-id")
+//                .build();
+//        requestTopicService
+//                .ensureTopic(requestTopicNameParameters, 0, TopicCleanupPolicyParameters.builder().build());
+//
+//        return requestConsumerFactoryService.createFactory(
+//                getParameterClass(),
+//                objectType,
+//                this::processEvent,
+//                new CommonLoggingErrorHandler()
+//        ).createContainer(requestTopicNameParameters);
+//    }
 
 
 }

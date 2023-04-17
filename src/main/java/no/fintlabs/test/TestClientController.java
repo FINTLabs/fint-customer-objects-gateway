@@ -1,12 +1,12 @@
-package no.fintlabs;
+package no.fintlabs.test;
 
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.portal.model.client.Client;
 import no.fintlabs.portal.model.client.ClientEvent;
 import no.fintlabs.portal.model.client.ClientService;
 import no.fintlabs.portal.utilities.SecretService;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +15,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.security.*;
 import java.util.Base64;
+import java.util.Optional;
 
 @ConditionalOnProperty(prefix = "fint.customer-object-gateway", name = "mode", havingValue = "test")
 @RestController
@@ -27,9 +28,12 @@ public class TestClientController {
 
     private final ClientService clientService;
 
-    public TestClientController(SecretService secretService, ClientService clientService) throws NoSuchAlgorithmException {
+    private final ClientEventRequestProducerService requestProducerService;
+
+    public TestClientController(SecretService secretService, ClientService clientService, ClientEventRequestProducerService requestProducerService) throws NoSuchAlgorithmException {
         this.secretService = secretService;
         this.clientService = clientService;
+        this.requestProducerService = requestProducerService;
 
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         generator.initialize(2048);
@@ -39,34 +43,41 @@ public class TestClientController {
 
     }
 
-    @GetMapping
-    public ResponseEntity<ClientEvent> generateGetClientEvent() {
-        Client client = clientService.getClients("fintlabs_no").stream().findAny().orElseThrow();
+    @GetMapping("{dn}")
+    public ResponseEntity<ClientEvent> generateGetClientEvent(@PathVariable String dn) {
+
+
+        Client client = new Client();
+        client.setDn(dn);
         client.setPublicKey(publicKey);
-        // These properties are set to null so that we only get the dn and public key in response. This is the only
-        // properties we need for a read, but we can have them all if we like.
-        client.setClientId(null);
-        client.setShortDescription(null);
-        client.setNote(null);
-        client.setAsset(null);
-        client.setAssetId(null);
-        client.setName(null);
 
-        ClientEvent clientEvent = new ClientEvent(client, "fintlabs.no", FintCustomerObjectEvent.Operation.READ);
+        return requestProducerService
+                .get(new ClientEvent(client, "fintlabs.no", FintCustomerObjectEvent.Operation.READ))
+                .map(ce -> {
+                    if (ce.hasError()) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ce);
+                    }
+                    return ResponseEntity.ok(ce);
+                })
+                .orElse(ResponseEntity.internalServerError().build());
 
-        return ResponseEntity.ok(clientEvent);
     }
 
     @PostMapping()
-    public ResponseEntity<ClientEvent> generateCreateClientEvent() {
-        Client client = new Client();
-        client.setName("test-" + RandomStringUtils.randomAlphabetic(5));
-        client.setShortDescription("Test");
-        client.setPublicKey(publicKey);
+    public ResponseEntity<ClientEvent> generateCreateClientEvent(@RequestBody ClientEvent clientEvent) {
 
-        ClientEvent clientEvent = new ClientEvent(client, "fintlabs.no", FintCustomerObjectEvent.Operation.CREATE);
+        clientEvent.getObject().setPublicKey(publicKey);
+        Optional<ClientEvent> clientEventResponse = requestProducerService.get(clientEvent);
 
-        return ResponseEntity.ok(clientEvent);
+        return clientEventResponse
+                .map(ce -> {
+                    if (ce.hasError()) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(ce);
+                    }
+                    return ResponseEntity.ok(ce);
+                })
+                .orElse(ResponseEntity.internalServerError().build());
+
     }
 
     @PutMapping()
@@ -98,4 +109,6 @@ public class TestClientController {
         return ResponseEntity.ok(client);
 
     }
+
+
 }

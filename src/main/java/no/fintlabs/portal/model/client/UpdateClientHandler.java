@@ -10,7 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
+//@Component
 public class UpdateClientHandler extends FintCustomerObjectEntityHandler<Client, ClientEvent> {
     private final ClientService clientService;
 

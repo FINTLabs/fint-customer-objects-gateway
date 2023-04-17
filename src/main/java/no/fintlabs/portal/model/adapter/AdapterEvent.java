@@ -9,6 +9,6 @@ import no.fintlabs.portal.model.FintCustomerObjectEvent;
 public class AdapterEvent extends FintCustomerObjectEvent<Adapter> {
 
     public AdapterEvent(Adapter object, String orgId, Operation operation) {
-        super(object, orgId, operation);
+        super(object, orgId, operation, "");
     }
 }

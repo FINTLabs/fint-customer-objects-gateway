@@ -91,13 +91,22 @@ public class TestClientController {
     }
 
     @DeleteMapping()
-    public ResponseEntity<ClientEvent> generateDeleteClientEvent() {
-        Client client = clientService.getClients("fintlabs_no").stream().findAny().orElseThrow();
-        client.setPublicKey(publicKey);
+    public ResponseEntity<ClientEvent> generateDeleteClientEvent(@RequestBody ClientEvent clientEvent) {
+//        Client client = clientService.getClients("fintlabs_no").stream().findAny().orElseThrow();
+//        client.setPublicKey(publicKey);
+//
+//        ClientEvent clientEvent = new ClientEvent(client, "fintlabs.no", FintCustomerObjectEvent.Operation.DELETE);
 
-        ClientEvent clientEvent = new ClientEvent(client, "fintlabs.no", FintCustomerObjectEvent.Operation.DELETE);
-
-        return ResponseEntity.ok(clientEvent);
+        clientEvent.setOperation(FintCustomerObjectEvent.Operation.DELETE);
+        return requestProducerService
+                .get(clientEvent)
+                .map(ce -> {
+                    if (ce.hasError()) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(ce);
+                    }
+                    return ResponseEntity.ok(ce);
+                })
+                .orElse(ResponseEntity.internalServerError().build());
     }
 
     @PostMapping("decrypt")

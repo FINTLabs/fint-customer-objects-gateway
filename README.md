@@ -10,7 +10,7 @@ Supports CRUD of:
 > You need to have a secure connection to the LDAP server before you start the application.
 
 When running in `test-mode` the gateway will start two controllers where you can get test json objects to submit on the
-event topics. You can import `flais-customer-object-gateway-test-controller.json` into your Insomnia.
+event topics. You can import insomnia.json into your Insomnia.
 
 ### Submit an client event
 

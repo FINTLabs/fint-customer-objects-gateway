@@ -3,7 +3,6 @@ package no.fintlabs.portal.model.client;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.kafka.entity.EntityProducerFactory;
 import no.fintlabs.kafka.entity.topic.EntityTopicService;
-import no.fintlabs.portal.exceptions.ObjectNotFoundException;
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.portal.model.FintCustomerObjectRequestHandler;
 import no.fintlabs.portal.model.organisation.Organisation;
@@ -33,8 +32,8 @@ public class GetClientHandler extends FintCustomerObjectRequestHandler<Client, C
 
         return clientService.getClientByDn(consumerRecord.value().getObject().getDn())
                 .map(client -> {
-                    clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
-                    clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
+                    client.setPassword(null);
+                    client.setClientSecret(null);
                     send(client);
 
                     return client;

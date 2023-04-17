@@ -3,7 +3,6 @@ package no.fintlabs.test;
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.portal.model.client.Client;
 import no.fintlabs.portal.model.client.ClientEvent;
-import no.fintlabs.portal.model.client.ClientService;
 import no.fintlabs.portal.utilities.SecretService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
@@ -26,13 +25,11 @@ public class TestClientController {
     private final PrivateKey privateKey;
     private final String publicKey;
 
-    private final ClientService clientService;
 
     private final ClientEventRequestProducerService requestProducerService;
 
-    public TestClientController(SecretService secretService, ClientService clientService, ClientEventRequestProducerService requestProducerService) throws NoSuchAlgorithmException {
+    public TestClientController(SecretService secretService, ClientEventRequestProducerService requestProducerService) throws NoSuchAlgorithmException {
         this.secretService = secretService;
-        this.clientService = clientService;
         this.requestProducerService = requestProducerService;
 
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
@@ -66,6 +63,7 @@ public class TestClientController {
     @PostMapping()
     public ResponseEntity<ClientEvent> generateCreateClientEvent(@RequestBody ClientEvent clientEvent) {
 
+        clientEvent.setOperation(FintCustomerObjectEvent.Operation.CREATE);
         clientEvent.getObject().setPublicKey(publicKey);
         Optional<ClientEvent> clientEventResponse = requestProducerService.get(clientEvent);
 
@@ -81,21 +79,23 @@ public class TestClientController {
     }
 
     @PutMapping()
-    public ResponseEntity<ClientEvent> generateUpdateClientEvent() {
-        Client client = clientService.getClients("fintlabs_no").stream().findAny().orElseThrow();
-        client.setPublicKey(publicKey);
+    public ResponseEntity<ClientEvent> generateUpdateClientEvent(@RequestBody ClientEvent clientEvent) {
 
-        ClientEvent clientEvent = new ClientEvent(client, "fintlabs.no", FintCustomerObjectEvent.Operation.UPDATE);
-
-        return ResponseEntity.ok(clientEvent);
+        clientEvent.setOperation(FintCustomerObjectEvent.Operation.UPDATE);
+        clientEvent.getObject().setPublicKey(publicKey);
+        return requestProducerService
+                .get(clientEvent)
+                .map(ce -> {
+                    if (ce.hasError()) {
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ce);
+                    }
+                    return ResponseEntity.ok(ce);
+                })
+                .orElse(ResponseEntity.internalServerError().build());
     }
 
     @DeleteMapping()
     public ResponseEntity<ClientEvent> generateDeleteClientEvent(@RequestBody ClientEvent clientEvent) {
-//        Client client = clientService.getClients("fintlabs_no").stream().findAny().orElseThrow();
-//        client.setPublicKey(publicKey);
-//
-//        ClientEvent clientEvent = new ClientEvent(client, "fintlabs.no", FintCustomerObjectEvent.Operation.DELETE);
 
         clientEvent.setOperation(FintCustomerObjectEvent.Operation.DELETE);
         return requestProducerService
@@ -110,12 +110,12 @@ public class TestClientController {
     }
 
     @PostMapping("decrypt")
-    public ResponseEntity<Client> decryptClient(@RequestBody Client client) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+    public ResponseEntity<Client> decryptClient(@RequestBody ClientEvent clientEvent) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 
-        client.setClientSecret(secretService.decrypt(privateKey, client.getClientSecret()));
-        client.setPassword(secretService.decrypt(privateKey, client.getPassword()));
+        clientEvent.getObject().setClientSecret(secretService.decrypt(privateKey, clientEvent.getObject().getClientSecret()));
+        clientEvent.getObject().setPassword(secretService.decrypt(privateKey, clientEvent.getObject().getPassword()));
 
-        return ResponseEntity.ok(client);
+        return ResponseEntity.ok(clientEvent.getObject());
 
     }
 

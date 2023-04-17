@@ -12,6 +12,7 @@ Supports CRUD of:
 When running in `test-mode` the gateway will start two controllers where you can get test json objects to submit on the
 event topics. You can import insomnia.json into your Insomnia.
 
+
 ### Submit an client event
 
 * Do a `POST` on http://localhost/client (in Insomnia) to get a sample `Create Client` event.

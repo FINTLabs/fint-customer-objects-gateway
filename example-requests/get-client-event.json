@@ -1,7 +1,0 @@
-{
-  "object": {
-    "dn": "cn=test13@client.fintlabs.no,ou=clients,ou=fintlabs_no,ou=organisations,o=fint"
-  },
-  "orgId": "fintlabs.no",
-  "operation": "READ"
-}

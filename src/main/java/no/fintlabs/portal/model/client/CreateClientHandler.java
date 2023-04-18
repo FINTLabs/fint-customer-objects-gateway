@@ -46,11 +46,11 @@ public class CreateClientHandler extends FintCustomerObjectWithSecretsRequestHan
         client.setDn(clientDn);
 
         return getFromCache(client)
-                .map(CreateClientHandler::handleFoundInCache)
+                .map(this::handleFoundInCache)
                 .orElseGet(() -> handleNotFoundInCache(consumerRecord, organisation));
     }
 
-    private static Client handleFoundInCache(Client client) {
+    private  Client handleFoundInCache(Client client) {
         log.debug("Found client in cache {}", client.getDn());
         return client;
     }

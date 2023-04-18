@@ -12,17 +12,15 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 @Slf4j
 @org.springframework.stereotype.Component
-public class CreateClientHandler extends FintCustomerObjectWithSecretsRequestHandler<Client, ClientEvent> {
+public class CreateClientHandler extends FintCustomerObjectWithSecretsRequestHandler<Client, ClientEvent, ClientService> {
 
-    private final ClientService clientService;
 
     private final ClientFactory clientFactory;
 
     private final ComponentService componentService;
 
     protected CreateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientCacheRepository clientCacheRepository, ClientFactory clientFactory, ComponentService componentService) {
-        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository);
-        this.clientService = clientService;
+        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository, clientService);
         this.clientFactory = clientFactory;
         this.componentService = componentService;
     }
@@ -50,14 +48,14 @@ public class CreateClientHandler extends FintCustomerObjectWithSecretsRequestHan
                 .orElseGet(() -> handleNotFoundInCache(consumerRecord, organisation));
     }
 
-    private  Client handleFoundInCache(Client client) {
+    private Client handleFoundInCache(Client client) {
         log.debug("Found client in cache {}", client.getDn());
         return client;
     }
 
     private Client handleNotFoundInCache(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
         log.debug("Client {} not in cache", consumerRecord.value().getObject().getName());
-        return clientService
+        return objectService
                 .getClientByName(
                         consumerRecord.value().getObject().getName(),
                         organisation)
@@ -67,7 +65,7 @@ public class CreateClientHandler extends FintCustomerObjectWithSecretsRequestHan
 
     private Client handleCreateClient(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
         log.debug("Client {} don't exist. Creating client...", consumerRecord.value().getObject().getName());
-        Client client = clientService.addClient(consumerRecord.value().getObject(), organisation)
+        Client client = objectService.addClient(consumerRecord.value().getObject(), organisation)
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while creating client."));
 
         ensureSecrets(consumerRecord, client);
@@ -82,12 +80,6 @@ public class CreateClientHandler extends FintCustomerObjectWithSecretsRequestHan
         ensureSecrets(consumerRecord, client);
         addToCache(client);
         return client;
-    }
-
-    private void ensureSecrets(ConsumerRecord<String, ClientEvent> consumerRecord, Client client) {
-        client.setPublicKey(consumerRecord.value().getObject().getPublicKey());
-        clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
-        clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
     }
 
     private void ensureComponents(ConsumerRecord<String, ClientEvent> consumerRecord) {

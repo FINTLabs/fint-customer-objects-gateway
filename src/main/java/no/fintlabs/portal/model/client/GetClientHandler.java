@@ -11,13 +11,11 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class GetClientHandler extends FintCustomerObjectWithSecretsRequestHandler<Client, ClientEvent> {
+public class GetClientHandler extends FintCustomerObjectWithSecretsRequestHandler<Client, ClientEvent, ClientService> {
 
-    private final ClientService clientService;
 
     protected GetClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientCacheRepository clientCacheRepository) {
-        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository);
-        this.clientService = clientService;
+        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository, clientService);
     }
 
     @Override
@@ -27,21 +25,18 @@ public class GetClientHandler extends FintCustomerObjectWithSecretsRequestHandle
 
     @Override
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
-        log.info("{} event.", consumerRecord.value().getOperationWithType());
-
         return getFromCache(consumerRecord.value().getObject())
                 .map(client -> {
                     log.debug("Found client in cache {}", client.getDn());
                     return client;
                 })
                 .orElseGet(() ->
-                        clientService.getClientByDn(consumerRecord.value().getObject().getDn())
+                        objectService.getClientByDn(consumerRecord.value().getObject().getDn())
                                 .map(client -> {
                                     log.debug("Cound not find client ({}) in cache. Getting the client for LDAP", client.getDn());
-                                    clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
-                                    clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
+
+                                    ensureSecrets(consumerRecord, client);
                                     send(client);
-                                    client.setPublicKey(consumerRecord.value().getObject().getPublicKey());
                                     addToCache(client);
 
                                     return client;

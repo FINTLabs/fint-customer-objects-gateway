@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.kafka.entity.EntityProducerFactory;
 import no.fintlabs.kafka.entity.topic.EntityTopicService;
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
-import no.fintlabs.portal.model.FintCustomerObjectRequestHandler;
 import no.fintlabs.portal.model.FintCustomerObjectWithSecretsRequestHandler;
 import no.fintlabs.portal.model.component.Component;
 import no.fintlabs.portal.model.component.ComponentService;
@@ -17,15 +16,13 @@ import java.util.List;
 
 @Slf4j
 @org.springframework.stereotype.Component
-public class UpdateClientHandler extends FintCustomerObjectWithSecretsRequestHandler<Client, ClientEvent> {
-    private final ClientService clientService;
+public class UpdateClientHandler extends FintCustomerObjectWithSecretsRequestHandler<Client, ClientEvent, ClientService> {
 
     private final ComponentService componentService;
 
 
     protected UpdateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ComponentService componentService, ClientCacheRepository clientCacheRepository) {
-        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository);
-        this.clientService = clientService;
+        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository, clientService);
         this.componentService = componentService;
     }
 
@@ -40,18 +37,16 @@ public class UpdateClientHandler extends FintCustomerObjectWithSecretsRequestHan
         log.info("{} event", consumerRecord.value().getOperationWithType());
 
 
-        Client currentClient = clientService.getClientByDn(consumerRecord.value().getObject().getDn())
+        Client currentClient = objectService.getClientByDn(consumerRecord.value().getObject().getDn())
                 .orElseThrow(() -> new RuntimeException("Unable to find client: " /*+ requestedClient.getDn() */));
 
         ensureComponents(consumerRecord, currentClient);
 
 
-        Client updatedClient = clientService.updateClient(consumerRecord.value().getObject())
+        Client updatedClient = objectService.updateClient(consumerRecord.value().getObject())
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while updating client."));
 
-        clientService.resetClientPassword(updatedClient, consumerRecord.value().getObject().getPublicKey());
-        clientService.encryptClientSecret(updatedClient, consumerRecord.value().getObject().getPublicKey());
-
+        ensureSecrets(consumerRecord, updatedClient);
         send(updatedClient);
         updateCache(updatedClient);
 

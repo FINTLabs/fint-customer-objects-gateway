@@ -4,27 +4,26 @@ import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.kafka.entity.EntityProducerFactory;
 import no.fintlabs.kafka.entity.topic.EntityTopicService;
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
-import no.fintlabs.portal.model.FintCustomerObjectRequestHandler;
+import no.fintlabs.portal.model.FintCustomerObjectWithSecretsRequestHandler;
 import no.fintlabs.portal.model.component.Component;
 import no.fintlabs.portal.model.component.ComponentService;
 import no.fintlabs.portal.model.organisation.Organisation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-import java.util.Optional;
-
 @Slf4j
 @org.springframework.stereotype.Component
-public class CreateClientHandler extends FintCustomerObjectRequestHandler<Client, ClientEvent> {
+public class CreateClientHandler extends FintCustomerObjectWithSecretsRequestHandler<Client, ClientEvent> {
 
     private final ClientService clientService;
-    private final ClientCacheRepository clientCacheRepository;
+
+    private final ClientFactory clientFactory;
 
     private final ComponentService componentService;
 
-    protected CreateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientCacheRepository clientCacheRepository, ComponentService componentService) {
-        super(entityTopicService, entityProducerFactory, Client.class);
+    protected CreateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientCacheRepository clientCacheRepository, ClientFactory clientFactory, ComponentService componentService) {
+        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository);
         this.clientService = clientService;
-        this.clientCacheRepository = clientCacheRepository;
+        this.clientFactory = clientFactory;
         this.componentService = componentService;
     }
 
@@ -38,36 +37,46 @@ public class CreateClientHandler extends FintCustomerObjectRequestHandler<Client
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
         log.info("{} event", consumerRecord.value().getOperationWithType());
 
-        Optional<Client> clientByName = clientService
-                .getClientByName(
-                        consumerRecord.value().getObject().getName(),
-                        organisation);
+        String clientDn = clientFactory.getClientDn(consumerRecord.value().getObject().getName(), organisation);
+        Client object = consumerRecord.value().getObject();
+        object.setDn(clientDn);
 
-        Client client;
+        return getFromCache(object)
+                .map(client -> {
+                    log.debug("Found client in cache {}", client.getDn());
+                    return client;
+                })
+                .orElseGet(() -> {
+                    log.debug("Client {} not in cache", consumerRecord.value().getObject().getName());
+                    return clientService
+                            .getClientByName(
+                                    consumerRecord.value().getObject().getName(),
+                                    organisation)
+                            .map(client -> {
+                                log.debug("The client ({}) already exists", client.getDn());
+                                client.setPublicKey(consumerRecord.value().getObject().getPublicKey());
+                                clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
+                                clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
+                                addToCache(client);
+                                return client;
+                            })
+                            .orElseGet(() -> {
+                                log.debug("Client {} don't exist. Creating client...", consumerRecord.value().getObject().getName());
+                                Client client = clientService.addClient(consumerRecord.value().getObject(), organisation)
+                                        .orElseThrow(() -> new RuntimeException("An unexpected error occurred while creating client."));
 
-        if (clientByName.isEmpty()) {
-            log.info("Client {} don't exist. Creating client.", consumerRecord.value().getObject().getName());
+                                client.setPublicKey(consumerRecord.value().getObject().getPublicKey());
+                                clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
+                                clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
+                                addToCache(client);
 
-            client = clientService.addClient(consumerRecord.value().getObject(), organisation)
-                    .orElseThrow(() -> new RuntimeException("An unexpected error occurred while creating client."));
-
-            client.setPublicKey(consumerRecord.value().getObject().getPublicKey());
-            clientCacheRepository.add(client);
-
-        } else {
-            log.info("Client {} exist.", consumerRecord.value().getObject().getName());
-            client = clientByName.get();
-        }
+                                return client;
+                            });
 
 
-        ensureComponents(consumerRecord);
 
-        clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
-        clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
 
-        send(client);
-
-        return client;
+                });
     }
 
     private void ensureComponents(ConsumerRecord<String, ClientEvent> consumerRecord) {

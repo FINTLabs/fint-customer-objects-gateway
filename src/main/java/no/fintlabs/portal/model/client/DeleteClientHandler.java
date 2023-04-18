@@ -5,21 +5,20 @@ import no.fintlabs.kafka.entity.EntityProducerFactory;
 import no.fintlabs.kafka.entity.topic.EntityTopicService;
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.portal.model.FintCustomerObjectRequestHandler;
+import no.fintlabs.portal.model.FintCustomerObjectWithSecretsRequestHandler;
 import no.fintlabs.portal.model.organisation.Organisation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class DeleteClientHandler extends FintCustomerObjectRequestHandler<Client, ClientEvent> {
+public class DeleteClientHandler extends FintCustomerObjectWithSecretsRequestHandler<Client, ClientEvent> {
 
     private final ClientService clientService;
-    private final ClientCacheRepository clientCacheRepository;
 
     protected DeleteClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientCacheRepository clientCacheRepository) {
-        super(entityTopicService, entityProducerFactory, Client.class);
+        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository);
         this.clientService = clientService;
-        this.clientCacheRepository = clientCacheRepository;
     }
 
     @Override
@@ -38,7 +37,7 @@ public class DeleteClientHandler extends FintCustomerObjectRequestHandler<Client
                 );
 
         sendDelete(client.getDn());
-        clientCacheRepository.remove(client);
+        removeFromCache(client);
 
         return client;
     }

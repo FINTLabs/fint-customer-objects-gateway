@@ -1,9 +1,8 @@
 package no.fintlabs.portal.model;
 
-import no.fintlabs.portal.ldap.BasicLdapEntry;
 import no.fintlabs.portal.ldap.BasicLdapEntryWithSecrets;
-import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,5 +33,9 @@ public abstract class FintCustomerObjectWithSecretsCacheRepository<T extends Bas
 
     public int size() {
         return clients.size();
+    }
+
+    public Collection<T> objects() {
+        return clients.values();
     }
 }

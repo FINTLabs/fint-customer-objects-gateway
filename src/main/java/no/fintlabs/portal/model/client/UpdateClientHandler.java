@@ -5,6 +5,7 @@ import no.fintlabs.kafka.entity.EntityProducerFactory;
 import no.fintlabs.kafka.entity.topic.EntityTopicService;
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.portal.model.FintCustomerObjectRequestHandler;
+import no.fintlabs.portal.model.FintCustomerObjectWithSecretsRequestHandler;
 import no.fintlabs.portal.model.component.Component;
 import no.fintlabs.portal.model.component.ComponentService;
 import no.fintlabs.portal.model.organisation.Organisation;
@@ -16,18 +17,16 @@ import java.util.List;
 
 @Slf4j
 @org.springframework.stereotype.Component
-public class UpdateClientHandler extends FintCustomerObjectRequestHandler<Client, ClientEvent> {
+public class UpdateClientHandler extends FintCustomerObjectWithSecretsRequestHandler<Client, ClientEvent> {
     private final ClientService clientService;
 
     private final ComponentService componentService;
 
-    private final ClientCacheRepository clientCacheRepository;
 
     protected UpdateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ComponentService componentService, ClientCacheRepository clientCacheRepository) {
-        super(entityTopicService, entityProducerFactory, Client.class);
+        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository);
         this.clientService = clientService;
         this.componentService = componentService;
-        this.clientCacheRepository = clientCacheRepository;
     }
 
     @Override
@@ -54,7 +53,7 @@ public class UpdateClientHandler extends FintCustomerObjectRequestHandler<Client
         clientService.encryptClientSecret(updatedClient, consumerRecord.value().getObject().getPublicKey());
 
         send(updatedClient);
-        clientCacheRepository.update(updatedClient);
+        updateCache(updatedClient);
 
         return updatedClient;
     }

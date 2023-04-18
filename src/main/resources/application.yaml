@@ -22,3 +22,4 @@ logging:
     org.apache.kafka: OFF
     no.fintlabs.kafka: OFF
     org.springframework.kafka: OFF
+    no.fintlabs: DEBUG

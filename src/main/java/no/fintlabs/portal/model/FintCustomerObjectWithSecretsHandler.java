@@ -7,13 +7,13 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.util.Optional;
 
-public abstract class FintCustomerObjectWithSecretsRequestHandler<T extends BasicLdapEntryWithSecrets, E extends FintCustomerObjectEvent<T>, S extends FintCustomerObjectWithSecretsService<T>> extends FintCustomerObjectRequestHandler<T, E> {
+public abstract class FintCustomerObjectWithSecretsHandler<T extends BasicLdapEntryWithSecrets, E extends FintCustomerObjectEvent<T>, S extends FintCustomerObjectWithSecretsService<T>> extends FintCustomerObjectHandler<T, E> {
 
     private final FintCustomerObjectWithSecretsCacheRepository<T> cacheRepository;
 
     protected final S objectService;
 
-    protected FintCustomerObjectWithSecretsRequestHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, Class<T> objectType, FintCustomerObjectWithSecretsCacheRepository<T> cacheRepository, S objectService) {
+    protected FintCustomerObjectWithSecretsHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, Class<T> objectType, FintCustomerObjectWithSecretsCacheRepository<T> cacheRepository, S objectService) {
         super(entityTopicService, entityProducerFactory, objectType);
         this.cacheRepository = cacheRepository;
         this.objectService = objectService;

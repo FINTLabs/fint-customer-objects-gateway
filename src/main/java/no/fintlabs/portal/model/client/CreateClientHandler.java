@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.kafka.entity.EntityProducerFactory;
 import no.fintlabs.kafka.entity.topic.EntityTopicService;
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
-import no.fintlabs.portal.model.FintCustomerObjectWithSecretsRequestHandler;
+import no.fintlabs.portal.model.FintCustomerObjectWithSecretsHandler;
 import no.fintlabs.portal.model.component.Component;
 import no.fintlabs.portal.model.component.ComponentService;
 import no.fintlabs.portal.model.organisation.Organisation;
@@ -12,7 +12,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 @Slf4j
 @org.springframework.stereotype.Component
-public class CreateClientHandler extends FintCustomerObjectWithSecretsRequestHandler<Client, ClientEvent, ClientService> {
+public class CreateClientHandler extends FintCustomerObjectWithSecretsHandler<Client, ClientEvent, ClientService> {
 
 
     private final ClientFactory clientFactory;

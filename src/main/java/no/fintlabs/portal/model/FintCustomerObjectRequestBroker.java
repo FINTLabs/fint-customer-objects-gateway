@@ -20,14 +20,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-public abstract class FintCustomerObjectRequestEventHandler<E extends FintCustomerObjectEvent<T>, T extends BasicLdapEntry> {
+public abstract class FintCustomerObjectRequestBroker<E extends FintCustomerObjectEvent<T>, T extends BasicLdapEntry> {
 
     private final OrganisationService organisationService;
 
-    private Map<String, FintCustomerObjectRequestHandler<T, E>> actionsHandlerMap;
-    private final Collection<FintCustomerObjectRequestHandler<T, E>> handlers;
+    private Map<String, FintCustomerObjectHandler<T, E>> actionsHandlerMap;
+    private final Collection<FintCustomerObjectHandler<T, E>> handlers;
 
-    public FintCustomerObjectRequestEventHandler(OrganisationService organisationService, Collection<FintCustomerObjectRequestHandler<T, E>> handlers) {
+    public FintCustomerObjectRequestBroker(OrganisationService organisationService, Collection<FintCustomerObjectHandler<T, E>> handlers) {
         this.organisationService = organisationService;
         this.handlers = handlers;
     }

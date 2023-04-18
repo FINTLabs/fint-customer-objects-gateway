@@ -11,18 +11,17 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.ParameterizedType;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 
-public abstract class FintCustomerObjectRequestHandler<T extends BasicLdapEntry, E extends FintCustomerObjectEvent<T>> implements BiFunction<ConsumerRecord<String, E>, Organisation, T> {
+public abstract class FintCustomerObjectHandler<T extends BasicLdapEntry, E extends FintCustomerObjectEvent<T>> implements BiFunction<ConsumerRecord<String, E>, Organisation, T> {
 
     private final EntityTopicService entityTopicService;
     private final EntityTopicNameParameters entityTopic;
 
     private final EntityProducer<T> entityProducer;
 
-    protected FintCustomerObjectRequestHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, Class<T> objectType) {
+    protected FintCustomerObjectHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, Class<T> objectType) {
         this.entityTopicService = entityTopicService;
 
         entityProducer = entityProducerFactory.createProducer(getParameterClass());

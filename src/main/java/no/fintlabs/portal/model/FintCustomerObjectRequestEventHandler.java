@@ -61,7 +61,7 @@ public abstract class FintCustomerObjectRequestEventHandler<E extends FintCustom
 
     private ReplyProducerRecord<E> processEvent(ConsumerRecord<String, E> consumerRecord) {
 
-        log.info("{} event received for : {}", consumerRecord.value().getOperationWithType(), consumerRecord.value().getObject());
+        log.info("{} event received for : {}", consumerRecord.value().getOperationWithType(), consumerRecord.value().getOrganisationObjectName());
         E event = consumerRecord.value();
         try {
             T customerObject = actionsHandlerMap
@@ -79,7 +79,7 @@ public abstract class FintCustomerObjectRequestEventHandler<E extends FintCustom
                     .build();
 
         } catch (Exception e) {
-            log.error("An error occurred when handling event {}:", consumerRecord.value().getObject());
+            log.error("An error occurred when handling event {}:", consumerRecord.value().getOperationWithType());
             log.error(e.getMessage());
 
             event.setErrorMessage(e.getMessage());

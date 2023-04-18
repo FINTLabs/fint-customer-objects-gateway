@@ -14,10 +14,12 @@ import org.springframework.stereotype.Component;
 public class GetClientHandler extends FintCustomerObjectRequestHandler<Client, ClientEvent> {
 
     private final ClientService clientService;
+    private final ClientCacheRepository clientCacheRepository;
 
-    protected GetClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService) {
+    protected GetClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientCacheRepository clientCacheRepository) {
         super(entityTopicService, entityProducerFactory, Client.class);
         this.clientService = clientService;
+        this.clientCacheRepository = clientCacheRepository;
     }
 
     @Override
@@ -27,18 +29,21 @@ public class GetClientHandler extends FintCustomerObjectRequestHandler<Client, C
 
     @Override
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
-        log.info("{}", consumerRecord);
-        log.info("{}", organisation);
+        log.info("{} event.", consumerRecord.value().getOperationWithType());
 
-        return clientService.getClientByDn(consumerRecord.value().getObject().getDn())
-                .map(client -> {
-                    client.setPassword(null);
-                    client.setClientSecret(null);
-                    send(client);
+        return clientCacheRepository.get(consumerRecord.value().getObject())
+                .orElseGet(() ->
+                        clientService.getClientByDn(consumerRecord.value().getObject().getDn())
+                                .map(client -> {
+                                    clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
+                                    clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
+                                    send(client);
+                                    client.setPublicKey(consumerRecord.value().getObject().getPublicKey());
+                                    clientCacheRepository.add(client);
 
-                    return client;
-                })
-                .orElseThrow(() -> new RuntimeException("Unable to find client: " + consumerRecord.value().getObject().getDn()));
-
+                                    return client;
+                                })
+                                .orElseThrow(() -> new RuntimeException("Unable to find client: " + consumerRecord.value().getObject().getDn()))
+                );
     }
 }

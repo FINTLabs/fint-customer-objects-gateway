@@ -21,10 +21,13 @@ public class UpdateClientHandler extends FintCustomerObjectRequestHandler<Client
 
     private final ComponentService componentService;
 
-    protected UpdateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ComponentService componentService) {
+    private final ClientCacheRepository clientCacheRepository;
+
+    protected UpdateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ComponentService componentService, ClientCacheRepository clientCacheRepository) {
         super(entityTopicService, entityProducerFactory, Client.class);
         this.clientService = clientService;
         this.componentService = componentService;
+        this.clientCacheRepository = clientCacheRepository;
     }
 
     @Override
@@ -35,8 +38,7 @@ public class UpdateClientHandler extends FintCustomerObjectRequestHandler<Client
     @Override
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
 
-        log.info("{}", consumerRecord);
-        log.info("{}", organisation);
+        log.info("{} event", consumerRecord.value().getOperationWithType());
 
 
         Client currentClient = clientService.getClientByDn(consumerRecord.value().getObject().getDn())
@@ -52,6 +54,7 @@ public class UpdateClientHandler extends FintCustomerObjectRequestHandler<Client
         clientService.encryptClientSecret(updatedClient, consumerRecord.value().getObject().getPublicKey());
 
         send(updatedClient);
+        clientCacheRepository.update(updatedClient);
 
         return updatedClient;
     }

@@ -14,10 +14,12 @@ import org.springframework.stereotype.Component;
 public class DeleteClientHandler extends FintCustomerObjectRequestHandler<Client, ClientEvent> {
 
     private final ClientService clientService;
+    private final ClientCacheRepository clientCacheRepository;
 
-    protected DeleteClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService) {
+    protected DeleteClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientCacheRepository clientCacheRepository) {
         super(entityTopicService, entityProducerFactory, Client.class);
         this.clientService = clientService;
+        this.clientCacheRepository = clientCacheRepository;
     }
 
     @Override
@@ -27,8 +29,7 @@ public class DeleteClientHandler extends FintCustomerObjectRequestHandler<Client
 
     @Override
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
-        log.info("{}", consumerRecord);
-        log.info("{}", organisation);
+        log.info("{} event", consumerRecord.value().getOperationWithType());
 
         Client client = clientService.getClientByDn(consumerRecord.value().getObject().getDn())
                 .flatMap(clientService::deleteClient)
@@ -37,6 +38,7 @@ public class DeleteClientHandler extends FintCustomerObjectRequestHandler<Client
                 );
 
         sendDelete(client.getDn());
+        clientCacheRepository.remove(client);
 
         return client;
     }

@@ -16,3 +16,9 @@ spring:
 
   jackson:
     default-property-inclusion: non_null
+
+logging:
+  level:
+    org.apache.kafka: OFF
+    no.fintlabs.kafka: OFF
+    org.springframework.kafka: OFF

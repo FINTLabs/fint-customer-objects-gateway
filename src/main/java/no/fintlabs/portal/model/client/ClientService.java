@@ -54,7 +54,7 @@ public class ClientService {
             assetService.linkClientToAsset(primaryAsset, client);
         }
 
-        return getClient(client.getName(), organisation.getName());
+        return getClientByDn(client.getDn());
     }
 
     public List<Client> getClients(String orgName) {
@@ -73,8 +73,8 @@ public class ClientService {
         ));
     }
 
-    public Optional<Client> getClient(String clientName, String orgId) {
-        return getClientByDn(clientFactory.getClientDn(clientName, orgId));
+    public Optional<Client> getClientByName(String clientName, Organisation organisation) {
+        return getClientByDn(clientFactory.getClientDn(clientName, organisation));
     }
 
     public Optional<Client> getClientByDn(String dn) {

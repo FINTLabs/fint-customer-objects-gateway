@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import no.fintlabs.portal.ldap.BasicLdapEntry;
+import no.fintlabs.portal.ldap.BasicLdapEntryWithSecrets;
 import org.springframework.ldap.odm.annotations.Attribute;
 import org.springframework.ldap.odm.annotations.Entry;
 import org.springframework.ldap.odm.annotations.Id;
@@ -21,7 +21,7 @@ import java.util.List;
 @ApiModel
 @ToString(exclude = {"password", "clientSecret"})
 @Entry(objectClasses = {"fintClient", "inetOrgPerson", "organizationalPerson", "person", "top"})
-public final class Client implements BasicLdapEntry {
+public final class Client implements BasicLdapEntryWithSecrets {
 
     @ApiModelProperty(value = "DN of the client. This is automatically set.")
     @Id

@@ -19,6 +19,9 @@ spec:
         - name: fint-customer-objects-gateway
           image: "ghcr.io/fintlabs/fint-customer-objects-gateway:sha-0000000"
           imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: credentials
+              mountPath: /credentials
           env:
             - name: logging.level.no.fintlabs
               value: DEBUG

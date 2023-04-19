@@ -6,4 +6,6 @@ public interface BasicLdapEntryWithSecrets extends BasicLdapEntry {
 
     void setPublicKey(String publicKey);
 
+    void clearSecrets();
+
 }

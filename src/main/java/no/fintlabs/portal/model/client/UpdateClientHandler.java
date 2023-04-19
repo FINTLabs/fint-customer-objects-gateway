@@ -36,14 +36,16 @@ public class UpdateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
 
         log.info("{} event", consumerRecord.value().getOperationWithType());
 
+        Client desiredClient = consumerRecord.value().getObject();
+        desiredClient.clearSecrets();
 
-        Client currentClient = objectService.getClientByDn(consumerRecord.value().getObject().getDn())
-                .orElseThrow(() -> new RuntimeException("Unable to find client: " /*+ requestedClient.getDn() */));
+        Client currentClient = objectService.getClientByDn(desiredClient.getDn())
+                .orElseThrow(() -> new RuntimeException("Unable to find client: "));
 
         ensureComponents(consumerRecord, currentClient);
 
 
-        Client updatedClient = objectService.updateClient(consumerRecord.value().getObject())
+        Client updatedClient = objectService.updateClient(desiredClient)
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while updating client."));
 
         ensureSecrets(consumerRecord, updatedClient);
@@ -60,13 +62,13 @@ public class UpdateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
         componentsToAdd.forEach(s -> {
             Component component = componentService.getComponentByDn(s)
                     .orElseThrow(() -> new RuntimeException("Unable to find component: " + s));
-            componentService.linkClient(component, consumerRecord.value().getObject());
+            componentService.linkClient(component, currentClient);
         });
 
         componentsToRemove.forEach(s -> {
             Component component = componentService.getComponentByDn(s)
                     .orElseThrow(() -> new RuntimeException("Unable to find component: " + s));
-            componentService.unLinkClient(component, consumerRecord.value().getObject());
+            componentService.unLinkClient(component, currentClient);
         });
     }
 }

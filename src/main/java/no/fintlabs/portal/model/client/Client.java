@@ -23,34 +23,29 @@ import java.util.List;
 @Entry(objectClasses = {"fintClient", "inetOrgPerson", "organizationalPerson", "person", "top"})
 public final class Client implements BasicLdapEntryWithSecrets {
 
-    @ApiModelProperty(value = "DN of the client. This is automatically set.")
     @Id
     private Name dn;
 
-    @ApiModelProperty(value = "Username for the client.")
     @Attribute(name = "cn")
     private String name;
 
     @Attribute(name = "fintClientManaged")
     private boolean isManaged;
 
-    @ApiModelProperty(value = "Short description of the client")
     @Attribute(name = "sn")
     private String shortDescription;
 
-    @ApiModelProperty(value = "OrgId of the organisation the client is connected to. This is automatically set.")
     @Attribute(name = "fintClientAssetId")
     private String assetId;
 
-    @ApiModelProperty(value = "DN of the organisation the client is connected to. This is automatically set.")
     @Attribute(name = "fintClientAsset")
     private String asset;
 
-    @ApiModelProperty(value = "A note of the client.")
     @Attribute(name = "description")
     private String note;
 
-    @Attribute(name = "userPassword")
+    @Transient
+    //@Attribute(name = "userPassword")
     private String password;
 
     @Transient
@@ -61,7 +56,6 @@ public final class Client implements BasicLdapEntryWithSecrets {
     @Setter
     private String publicKey;
 
-    @ApiModelProperty(value = "OAuth client id")
     @Attribute(name = "fintOAuthClientId")
     private String clientId;
 
@@ -164,6 +158,7 @@ public final class Client implements BasicLdapEntryWithSecrets {
         isManaged = managed;
     }
 
+    @Override
     public String getDn() {
         if (dn != null) {
             return dn.toString();

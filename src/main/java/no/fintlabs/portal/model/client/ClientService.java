@@ -9,10 +9,12 @@ import no.fintlabs.portal.model.organisation.Organisation;
 import no.fintlabs.portal.oauth.NamOAuthClientService;
 import no.fintlabs.portal.oauth.OAuthClient;
 import no.fintlabs.portal.utilities.SecretService;
+import org.springframework.ldap.support.LdapNameBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -77,11 +79,16 @@ public class ClientService implements FintCustomerObjectWithSecretsService<Clien
 
     @Override
     public void encryptPassword(Client client, String privateKeyString) {
-        String password = secretService.generateSecret();
-        client.setPassword(password);
-        boolean updateEntry = ldapService.updateEntry(client);
-        log.debug("Updating password is successfully: {}", updateEntry);
-        client.setPassword(secretService.encryptPassword(password, privateKeyString));
+//        String password = secretService.generateSecret();
+//        //client.setPassword(password);
+//        boolean updateEntry = ldapService.updateEntry(
+//                ClientPassword
+//                        .builder()
+//                        .password(password)
+//                        .build()
+//        );
+//        log.debug("Updating password is successfully: {}", updateEntry);
+        client.setPassword(secretService.encryptPassword(resetClientPassword(client), privateKeyString));
     }
 
     public Optional<Client> getClientByName(String clientName, Organisation organisation) {
@@ -107,9 +114,19 @@ public class ClientService implements FintCustomerObjectWithSecretsService<Clien
         return Optional.of(client);
     }
 
-    @Deprecated
-    public void resetClientPassword(Client client, String privateKeyString) {
-        encryptPassword(client, privateKeyString);
+
+    private String  resetClientPassword(Client client) {
+        String password = secretService.generateSecret();
+        boolean updateEntry = ldapService.updateEntry(
+                ClientPassword
+                        .builder()
+                        .dn(LdapNameBuilder.newInstance(Objects.requireNonNull(client.getDn())).build())
+                        .password(password)
+                        .build()
+        );
+        log.debug("Updating password is successfully: {}", updateEntry);
+
+        return password;
     }
 
 

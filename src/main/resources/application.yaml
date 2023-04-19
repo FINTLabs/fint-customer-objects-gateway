@@ -1,6 +1,6 @@
 fint:
   application-id: fint-customer-gateway
-  org-id: fintlabs.no
+  org-id: flais.io
   kafka:
     topic:
       org-id: ${fint.org-id}
@@ -16,3 +16,10 @@ spring:
 
   jackson:
     default-property-inclusion: non_null
+
+logging:
+  level:
+    org.apache.kafka: OFF
+    no.fintlabs.kafka: OFF
+    org.springframework.kafka: OFF
+    no.fintlabs: DEBUG

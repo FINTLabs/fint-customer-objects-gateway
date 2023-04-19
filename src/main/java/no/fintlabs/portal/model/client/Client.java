@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import no.fintlabs.portal.ldap.BasicLdapEntry;
+import no.fintlabs.portal.ldap.BasicLdapEntryWithSecrets;
 import org.springframework.ldap.odm.annotations.Attribute;
 import org.springframework.ldap.odm.annotations.Entry;
 import org.springframework.ldap.odm.annotations.Id;
@@ -21,7 +21,7 @@ import java.util.List;
 @ApiModel
 @ToString(exclude = {"password", "clientSecret"})
 @Entry(objectClasses = {"fintClient", "inetOrgPerson", "organizationalPerson", "person", "top"})
-public final class Client implements BasicLdapEntry {
+public final class Client implements BasicLdapEntryWithSecrets {
 
     @ApiModelProperty(value = "DN of the client. This is automatically set.")
     @Id
@@ -30,6 +30,9 @@ public final class Client implements BasicLdapEntry {
     @ApiModelProperty(value = "Username for the client.")
     @Attribute(name = "cn")
     private String name;
+
+    @Attribute(name = "fintClientManaged")
+    private boolean isManaged;
 
     @ApiModelProperty(value = "Short description of the client")
     @Attribute(name = "sn")
@@ -153,6 +156,14 @@ public final class Client implements BasicLdapEntry {
         return clientSecret;
     }
 
+    public boolean isManaged() {
+        return isManaged;
+    }
+
+    public void setManaged(boolean managed) {
+        isManaged = managed;
+    }
+
     public String getDn() {
         if (dn != null) {
             return dn.toString();
@@ -177,5 +188,11 @@ public final class Client implements BasicLdapEntry {
 
     public void setClientId(String clientId) {
         this.clientId = clientId;
+    }
+
+    @Override
+    public void clearSecrets() {
+        password = null;
+        clientSecret = null;
     }
 }

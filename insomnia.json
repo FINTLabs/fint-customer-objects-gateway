@@ -1,8 +1,8 @@
 {
   "_type": "export",
   "__export_format": 4,
-  "__export_date": "2023-04-11T08:53:12.363Z",
-  "__export_source": "insomnia.desktop.app:v2022.7.5",
+  "__export_date": "2023-04-17T13:20:06.690Z",
+  "__export_source": "insomnia.desktop.app:v2023.1.0",
   "resources": [
     {
       "_id": "req_523770431370403a88a81c584524ae2a",
@@ -40,7 +40,7 @@
     {
       "_id": "req_b8d8ad18655549b9a8d9246b1a8fbfd1",
       "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
-      "modified": 1681202280495,
+      "modified": 1681203282481,
       "created": 1681201258413,
       "url": "http://localhost:8080/adapter/decrypt",
       "name": "Adapter decrypt",
@@ -172,15 +172,23 @@
     {
       "_id": "req_99cc76c1532c4c3e90abd69c1c09a1db",
       "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
-      "modified": 1681202280495,
+      "modified": 1681737540461,
       "created": 1681057766108,
       "url": "http://localhost:8080/client",
       "name": "Client create event",
       "description": "",
       "method": "POST",
-      "body": {},
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"object\": {\n\t\t\"name\": \"test-sondre2\",\n\t\t\"shortDescription\": \"Test\",\n\t\t\"components\": [\n\t\t\t\"ou=utdanning_utdanningsprogram,ou=components,o=fint\",\n\t\t\t\"ou=administrasjon_personal,ou=components,o=fint\"\n\t\t],\n\t\t\"accessPackages\": []\n\t},\n\t\"orgId\": \"fintlabs.no\",\n\t\"operation\": \"CREATE\"\n}"
+      },
       "parameters": [],
-      "headers": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
       "authentication": {},
       "metaSortKey": 600,
       "isPrivate": false,
@@ -195,7 +203,7 @@
     {
       "_id": "req_f9f64e3a7acd4f70aab12b9517fac12f",
       "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
-      "modified": 1681202280495,
+      "modified": 1681737421607,
       "created": 1681057818050,
       "url": "http://localhost:8080/client/decrypt",
       "name": "Client decrypt",
@@ -203,7 +211,7 @@
       "method": "POST",
       "body": {
         "mimeType": "application/json",
-        "text": ""
+        "text": "{% response 'raw', 'req_c955c3f181d7422883f654d08897abd5', '', 'never', 60 %}"
       },
       "parameters": [],
       "headers": [
@@ -226,15 +234,23 @@
     {
       "_id": "req_ef91e661467244c98d293a6564c42ac5",
       "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
-      "modified": 1681202280495,
+      "modified": 1681735517978,
       "created": 1681071907579,
       "url": "http://localhost:8080/client",
       "name": "Client delete event",
       "description": "",
       "method": "DELETE",
-      "body": {},
+      "body": {
+        "mimeType": "application/json",
+        "text": ""
+      },
       "parameters": [],
-      "headers": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
       "authentication": {},
       "metaSortKey": 800,
       "isPrivate": false,
@@ -249,9 +265,9 @@
     {
       "_id": "req_3c008bb19786448081845ed493f9e382",
       "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
-      "modified": 1681202280495,
+      "modified": 1681736872193,
       "created": 1681071435917,
-      "url": "http://localhost:8080/client",
+      "url": "http://localhost:8080/client/cn=test-sondre1@client.fintlabs.no,ou=clients,ou=fintlabs_no,ou=organisations,o=fint",
       "name": "Client read event",
       "description": "",
       "method": "GET",
@@ -272,15 +288,23 @@
     {
       "_id": "req_c955c3f181d7422883f654d08897abd5",
       "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
-      "modified": 1681202280495,
+      "modified": 1681737574738,
       "created": 1681069538820,
       "url": "http://localhost:8080/client",
       "name": "Client update event",
       "description": "",
       "method": "PUT",
-      "body": {},
+      "body": {
+        "mimeType": "application/json",
+        "text": ""
+      },
       "parameters": [],
-      "headers": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
       "authentication": {},
       "metaSortKey": 1000,
       "isPrivate": false,

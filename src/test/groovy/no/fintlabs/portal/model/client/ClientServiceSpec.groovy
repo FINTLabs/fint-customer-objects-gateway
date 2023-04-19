@@ -64,7 +64,7 @@ class ClientServiceSpec extends Specification {
 
     def "Get Client"() {
         when:
-        def client = clientService.getClient(UUID.randomUUID().toString(), UUID.randomUUID().toString())
+        def client = clientService.getClientByName(UUID.randomUUID().toString(), UUID.randomUUID().toString())
 
         then:
         client.isPresent()
@@ -74,7 +74,7 @@ class ClientServiceSpec extends Specification {
 
     def "Get Adapter OpenID Secret"() {
         when:
-        def client = clientService.getClient(UUID.randomUUID().toString(), UUID.randomUUID().toString())
+        def client = clientService.getClientByName(UUID.randomUUID().toString(), UUID.randomUUID().toString())
         def secret = clientService.getClientSecret(client.get())
 
         then:

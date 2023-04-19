@@ -43,9 +43,9 @@ public class ClientFactory {
                 .build();
     }
 
-    public String getClientDn(String clientUuid, String orgUuid) {
-        return LdapNameBuilder.newInstance(getClientBase(orgUuid))
-                .add(LdapConstants.CN, clientUuid)
+    public String getClientDn(String clientName, Organisation organisation) {
+        return LdapNameBuilder.newInstance(getClientBase(organisation.getName()))
+                .add(LdapConstants.CN, getClientFullName(clientName, organisation.getPrimaryAssetId()))
                 .build()
                 .toString();
     }

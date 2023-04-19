@@ -2,6 +2,7 @@ package no.fintlabs.portal.model.client;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.portal.ldap.LdapService;
+import no.fintlabs.portal.model.FintCustomerObjectWithSecretsService;
 import no.fintlabs.portal.model.asset.Asset;
 import no.fintlabs.portal.model.asset.AssetService;
 import no.fintlabs.portal.model.organisation.Organisation;
@@ -16,7 +17,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class ClientService {
+public class ClientService implements FintCustomerObjectWithSecretsService<Client> {
 
     private final ClientFactory clientFactory;
 
@@ -54,7 +55,7 @@ public class ClientService {
             assetService.linkClientToAsset(primaryAsset, client);
         }
 
-        return getClient(client.getName(), organisation.getName());
+        return getClientByDn(client.getDn());
     }
 
     public List<Client> getClients(String orgName) {
@@ -66,6 +67,7 @@ public class ClientService {
         return namOAuthClientService.getOAuthClient(client.getClientId()).getClientSecret();
     }
 
+    @Override
     public void encryptClientSecret(Client client, String publicKeyString) {
         client.setClientSecret(secretService.encryptPassword(
                 namOAuthClientService.getOAuthClient(client.getClientId()).getClientSecret(),
@@ -73,8 +75,17 @@ public class ClientService {
         ));
     }
 
-    public Optional<Client> getClient(String clientName, String orgId) {
-        return getClientByDn(clientFactory.getClientDn(clientName, orgId));
+    @Override
+    public void encryptPassword(Client client, String privateKeyString) {
+        String password = secretService.generateSecret();
+        client.setPassword(password);
+        boolean updateEntry = ldapService.updateEntry(client);
+        log.debug("Updating password is successfully: {}", updateEntry);
+        client.setPassword(secretService.encryptPassword(password, privateKeyString));
+    }
+
+    public Optional<Client> getClientByName(String clientName, Organisation organisation) {
+        return getClientByDn(clientFactory.getClientDn(clientName, organisation));
     }
 
     public Optional<Client> getClientByDn(String dn) {
@@ -96,13 +107,9 @@ public class ClientService {
         return Optional.of(client);
     }
 
+    @Deprecated
     public void resetClientPassword(Client client, String privateKeyString) {
-
-        String password = secretService.generateSecret();
-        client.setPassword(password);
-        boolean updateEntry = ldapService.updateEntry(client);
-        log.debug("Updating password is successfully: {}", updateEntry);
-        client.setPassword(secretService.encryptPassword(password, privateKeyString));
+        encryptPassword(client, privateKeyString);
     }
 
 

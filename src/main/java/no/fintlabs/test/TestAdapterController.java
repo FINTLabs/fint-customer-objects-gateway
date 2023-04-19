@@ -1,4 +1,4 @@
-package no.fintlabs;
+package no.fintlabs.test;
 
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.portal.model.adapter.Adapter;

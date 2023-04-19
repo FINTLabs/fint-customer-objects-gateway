@@ -1,22 +1,20 @@
 package no.fintlabs.portal.model.client;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.portal.model.FintCustomerObjectEntityHandler;
-import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.kafka.entity.EntityProducerFactory;
 import no.fintlabs.kafka.entity.topic.EntityTopicService;
+import no.fintlabs.portal.model.FintCustomerObjectEvent;
+import no.fintlabs.portal.model.FintCustomerObjectWithSecretsHandler;
 import no.fintlabs.portal.model.organisation.Organisation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class DeleteClientHandler extends FintCustomerObjectEntityHandler<Client, ClientEvent> {
+public class DeleteClientHandler extends FintCustomerObjectWithSecretsHandler<Client, ClientEvent, ClientService> {
 
-    private final ClientService clientService;
-    protected DeleteClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService) {
-        super(entityTopicService, entityProducerFactory, Client.class);
-        this.clientService = clientService;
+    protected DeleteClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientCacheRepository clientCacheRepository) {
+        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository, clientService);
     }
 
     @Override
@@ -25,12 +23,18 @@ public class DeleteClientHandler extends FintCustomerObjectEntityHandler<Client,
     }
 
     @Override
-    public void accept(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
-        log.info("{}", consumerRecord);
-        log.info("{}", organisation);
+    public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
+        log.info("{} event", consumerRecord.value().getOperationWithType());
 
-        Client client = clientService.deleteClient(consumerRecord.value().getObject())
-                .orElseThrow(() -> new RuntimeException("An unexpected error occurred while deleting client."));
+        Client client = objectService.getClientByDn(consumerRecord.value().getObject().getDn())
+                .flatMap(objectService::deleteClient)
+                .orElseThrow(() ->
+                        new RuntimeException("Unable to find client with dn: " + consumerRecord.value().getObject().getDn())
+                );
+
         sendDelete(client.getDn());
+        removeFromCache(client);
+
+        return client;
     }
 }

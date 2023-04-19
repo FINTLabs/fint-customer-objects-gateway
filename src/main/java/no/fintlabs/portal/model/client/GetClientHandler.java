@@ -1,23 +1,21 @@
 package no.fintlabs.portal.model.client;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.portal.model.FintCustomerObjectEntityHandler;
-import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.kafka.entity.EntityProducerFactory;
 import no.fintlabs.kafka.entity.topic.EntityTopicService;
+import no.fintlabs.portal.model.FintCustomerObjectEvent;
+import no.fintlabs.portal.model.FintCustomerObjectWithSecretsHandler;
 import no.fintlabs.portal.model.organisation.Organisation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class GetClientHandler extends FintCustomerObjectEntityHandler<Client, ClientEvent> {
+public class GetClientHandler extends FintCustomerObjectWithSecretsHandler<Client, ClientEvent, ClientService> {
 
-    private final ClientService clientService;
 
-    protected GetClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService) {
-        super(entityTopicService, entityProducerFactory, Client.class);
-        this.clientService = clientService;
+    protected GetClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientCacheRepository clientCacheRepository) {
+        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository, clientService);
     }
 
     @Override
@@ -26,16 +24,24 @@ public class GetClientHandler extends FintCustomerObjectEntityHandler<Client, Cl
     }
 
     @Override
-    public void accept(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
-        log.info("{}", consumerRecord);
-        log.info("{}", organisation);
+    public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
+        return getFromCache(consumerRecord.value().getObject())
+                .map(client -> {
+                    log.debug("Found client in cache {}", client.getDn());
+                    return client;
+                })
+                .orElseGet(() ->
+                        objectService.getClientByDn(consumerRecord.value().getObject().getDn())
+                                .map(client -> {
+                                    log.debug("Cound not find client ({}) in cache. Getting the client for LDAP", client.getDn());
 
-        Client client = clientService.getClientByDn(consumerRecord.value().getObject().getDn())
-                .orElseThrow(() -> new RuntimeException("An unexpected error occurred while reading client."));
+                                    ensureSecrets(consumerRecord, client);
+                                    send(client);
+                                    addToCache(client);
 
-        clientService.resetClientPassword(client, consumerRecord.value().getObject().getPublicKey());
-        clientService.encryptClientSecret(client, consumerRecord.value().getObject().getPublicKey());
-
-        send(client);
+                                    return client;
+                                })
+                                .orElseThrow(() -> new RuntimeException("Unable to find client: " + consumerRecord.value().getObject().getDn()))
+                );
     }
 }

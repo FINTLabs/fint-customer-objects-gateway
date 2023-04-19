@@ -11,6 +11,10 @@ spec:
         prometheus.io/port: "8080"
         prometheus.io/scrape: "true"
     spec:
+      volumes:
+        - name: credentials
+          secret:
+            secretName: fint-customer-objects-gateway-kafka-certificates
       containers:
         - name: fint-customer-objects-gateway
           image: "ghcr.io/fintlabs/fint-customer-objects-gateway:sha-0000000"
@@ -21,6 +25,8 @@ spec:
           envFrom:
             - secretRef:
                 name: fint-customer-objects-gateway
+            - secretRef:
+                name: fint-customer-objects-gateway-kafka
           ports:
             - name: http
               containerPort: 8080

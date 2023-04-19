@@ -31,6 +31,9 @@ public final class Client implements BasicLdapEntryWithSecrets {
     @Attribute(name = "cn")
     private String name;
 
+    @Attribute(name = "fintClientManaged")
+    private boolean isManaged;
+
     @ApiModelProperty(value = "Short description of the client")
     @Attribute(name = "sn")
     private String shortDescription;
@@ -151,6 +154,14 @@ public final class Client implements BasicLdapEntryWithSecrets {
 
     public String getClientSecret() {
         return clientSecret;
+    }
+
+    public boolean isManaged() {
+        return isManaged;
+    }
+
+    public void setManaged(boolean managed) {
+        isManaged = managed;
     }
 
     public String getDn() {

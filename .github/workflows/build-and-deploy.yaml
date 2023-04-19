@@ -91,5 +91,5 @@ jobs:
           manifests: ${{ steps.bake-API.outputs.manifestsBundle }}
           images: |
             ${{ steps.meta.outputs.tags }}
-          namespace: operators
+          namespace: flais-io
           action: deploy

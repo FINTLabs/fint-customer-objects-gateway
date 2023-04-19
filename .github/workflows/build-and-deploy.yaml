@@ -9,6 +9,8 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   ALPHA_CLUSTER_NAME: aks-alpha-fint-2021-11-18
   ALPHA_CLUSTER_RESOURCE_GROUP: rg-aks-alpha
+  API_CLUSTER_NAME: aks-api-fint-2022-02-08
+  API_CLUSTER_RESOURCE_GROUP: rg-aks-api
 
 jobs:
   build-and-push-image:
@@ -66,4 +68,28 @@ jobs:
           images: |
             ${{ steps.meta.outputs.tags }}
           namespace: flais-io
+          action: deploy
+
+      ## Api cluster ##
+      - name: Bake api manifests with Kustomize
+        uses: azure/k8s-bake@v2.2
+        with:
+          renderEngine: 'kustomize'
+          kustomizationPath: 'kustomize/overlays/api'
+        id: bake-api
+
+      - name: Set the target Api cluster.
+        uses: azure/aks-set-context@v1
+        with:
+          creds: '${{ secrets.AKS_API_FINT_GITHUB }}'
+          cluster-name: ${{ env.API_CLUSTER_NAME }}
+          resource-group: ${{ env.API_CLUSTER_RESOURCE_GROUP }}
+
+      - name: Deploy to API
+        uses: azure/k8s-deploy@v4.4
+        with:
+          manifests: ${{ steps.bake-API.outputs.manifestsBundle }}
+          images: |
+            ${{ steps.meta.outputs.tags }}
+          namespace: operators
           action: deploy

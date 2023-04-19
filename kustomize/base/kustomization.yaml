@@ -6,8 +6,8 @@ resources:
   - onepassword.yaml
   - namespace.yaml
 commonLabels:
-  app.kubernetes.io/name: pgerator
-  app.kubernetes.io/instance: flais-pgerator
+  app.kubernetes.io/name: fint-customer-objects-gateway
+  app.kubernetes.io/instance: fint-customer-objects-gateway
   app.kubernetes.io/version: "latest"
   app.kubernetes.io/managed-by: GA
   app.kubernetes.io/component: operator

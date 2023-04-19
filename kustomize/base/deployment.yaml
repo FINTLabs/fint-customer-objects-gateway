@@ -11,13 +11,8 @@ spec:
         prometheus.io/port: "8080"
         prometheus.io/scrape: "true"
     spec:
-      serviceAccountName: fint-customer-objects-gateway
-      securityContext:
-        {}
       containers:
         - name: fint-customer-objects-gateway
-          securityContext:
-            {}
           image: "ghcr.io/fintlabs/fint-customer-objects-gateway:sha-0000000"
           imagePullPolicy: IfNotPresent
           env:

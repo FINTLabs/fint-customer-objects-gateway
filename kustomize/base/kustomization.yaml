@@ -5,6 +5,7 @@ resources:
   - deployment.yaml
   - onepassword.yaml
   - namespace.yaml
+  - kafka.yaml
 commonLabels:
   app.kubernetes.io/name: fint-customer-objects-gateway
   app.kubernetes.io/instance: fint-customer-objects-gateway

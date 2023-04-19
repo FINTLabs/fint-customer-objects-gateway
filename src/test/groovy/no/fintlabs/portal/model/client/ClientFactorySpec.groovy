@@ -6,9 +6,11 @@ import spock.lang.Specification
 
 class ClientFactorySpec extends Specification {
     def clientFactory
+    def organisation
 
     void setup() {
         clientFactory = new ClientFactory(new SecretService(), "ou=org,o=fint")
+        organisation = new Organisation(primaryAssetId: "test.no", name: "test_no")
     }
 
     def "Setup Client"() {
@@ -35,11 +37,11 @@ class ClientFactorySpec extends Specification {
 
     def "Get Client Dn"() {
         when:
-        def dn = clientFactory.getClientDn("clientUuid", "orgUuid")
+        def dn = clientFactory.getClientDn("clientUuid", organisation)
 
         then:
         dn != null
         dn.contains("clientUuid")
-        dn.toString().contains("orgUuid")
+        dn.contains(organisation.getName())
     }
 }

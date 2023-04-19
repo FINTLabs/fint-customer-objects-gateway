@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fint-customer-objects-gateway
+spec:
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "8080"
+        prometheus.io/scrape: "true"
+    spec:
+      serviceAccountName: fint-customer-objects-gateway
+      securityContext:
+        {}
+      containers:
+        - name: fint-customer-objects-gateway
+          securityContext:
+            {}
+          image: "ghcr.io/fintlabs/fint-customer-objects-gateway:sha-0000000"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: logging.level.no.fintlabs
+              value: DEBUG
+          envFrom:
+            - secretRef:
+                name: fint-customer-objects-gateway
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /actuator/health
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: 500m
+            requests:
+              memory: 256Mi
+              cpu: 250m

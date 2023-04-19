@@ -19,6 +19,7 @@ class ClientServiceSpec extends Specification {
     private clientFactory
     private oauthService
     private assetService
+    private organisation
 
     def setup() {
         def organisationBase = "ou=org,o=fint"
@@ -34,6 +35,9 @@ class ClientServiceSpec extends Specification {
                 oauthService,
                 new SecretService()
         )
+
+        organisation = organisation = new Organisation(primaryAssetId: "test.no", name: "test_no")
+
     }
 
     def "Add Client"() {
@@ -64,7 +68,7 @@ class ClientServiceSpec extends Specification {
 
     def "Get Client"() {
         when:
-        def client = clientService.getClientByName(UUID.randomUUID().toString(), UUID.randomUUID().toString())
+        def client = clientService.getClientByName(UUID.randomUUID().toString(), organisation)
 
         then:
         client.isPresent()
@@ -74,7 +78,8 @@ class ClientServiceSpec extends Specification {
 
     def "Get Adapter OpenID Secret"() {
         when:
-        def client = clientService.getClientByName(UUID.randomUUID().toString(), UUID.randomUUID().toString())
+        def client = clientService.getClientByName(UUID.randomUUID().toString(),         organisation = new Organisation(primaryAssetId: "test.no", name: "test_no")
+        )
         def secret = clientService.getClientSecret(client.get())
 
         then:

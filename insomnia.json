@@ -1,7 +1,7 @@
 {
   "_type": "export",
   "__export_format": 4,
-  "__export_date": "2023-04-17T13:20:06.690Z",
+  "__export_date": "2023-04-20T21:06:56.362Z",
   "__export_source": "insomnia.desktop.app:v2023.1.0",
   "resources": [
     {
@@ -138,41 +138,9 @@
       "_type": "request"
     },
     {
-      "_id": "req_993e5dfc689c474e8578054b62120d0b",
-      "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
-      "modified": 1681202280495,
-      "created": 1681067659352,
-      "url": "",
-      "name": "Auth",
-      "description": "",
-      "method": "GET",
-      "body": {},
-      "parameters": [],
-      "headers": [],
-      "authentication": {
-        "type": "oauth2",
-        "grantType": "password",
-        "username": "{{ _.name }}",
-        "password": "{{ _.password }}",
-        "accessTokenUrl": "https://idp.test.felleskomponent.no/nidp/oauth/nam/token",
-        "clientId": "{{ _.clientId }}",
-        "clientSecret": "{{ _.clientSecret }}",
-        "scope": "profile"
-      },
-      "metaSortKey": 500,
-      "isPrivate": false,
-      "settingStoreCookies": true,
-      "settingSendCookies": true,
-      "settingDisableRenderRequestBody": false,
-      "settingEncodeUrl": true,
-      "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
-    },
-    {
       "_id": "req_99cc76c1532c4c3e90abd69c1c09a1db",
       "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
-      "modified": 1681737540461,
+      "modified": 1681990572780,
       "created": 1681057766108,
       "url": "http://localhost:8080/client",
       "name": "Client create event",
@@ -180,7 +148,7 @@
       "method": "POST",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n\t\"object\": {\n\t\t\"name\": \"test-sondre2\",\n\t\t\"shortDescription\": \"Test\",\n\t\t\"components\": [\n\t\t\t\"ou=utdanning_utdanningsprogram,ou=components,o=fint\",\n\t\t\t\"ou=administrasjon_personal,ou=components,o=fint\"\n\t\t],\n\t\t\"accessPackages\": []\n\t},\n\t\"orgId\": \"fintlabs.no\",\n\t\"operation\": \"CREATE\"\n}"
+        "text": ""
       },
       "parameters": [],
       "headers": [
@@ -191,6 +159,37 @@
       ],
       "authentication": {},
       "metaSortKey": 600,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_e3e812741c794e438bf5b4e972934bee",
+      "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
+      "modified": 1682023501047,
+      "created": 1682023339554,
+      "url": "http://localhost:8080/client/password/reset",
+      "name": "Client reset password",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": ""
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 650,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
@@ -234,7 +233,7 @@
     {
       "_id": "req_ef91e661467244c98d293a6564c42ac5",
       "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
-      "modified": 1681735517978,
+      "modified": 1682022326955,
       "created": 1681071907579,
       "url": "http://localhost:8080/client",
       "name": "Client delete event",
@@ -265,9 +264,9 @@
     {
       "_id": "req_3c008bb19786448081845ed493f9e382",
       "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
-      "modified": 1681736872193,
+      "modified": 1681990631603,
       "created": 1681071435917,
-      "url": "http://localhost:8080/client/cn=test-sondre1@client.fintlabs.no,ou=clients,ou=fintlabs_no,ou=organisations,o=fint",
+      "url": "http://localhost:8080/client/cn=test-sondre12@client.fintlabs.no,ou=clients,ou=fintlabs_no,ou=organisations,o=fint",
       "name": "Client read event",
       "description": "",
       "method": "GET",
@@ -286,9 +285,55 @@
       "_type": "request"
     },
     {
+      "_id": "req_029cc51c969a4f1ea676a4820e87d12b",
+      "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
+      "modified": 1681809161676,
+      "created": 1681809154687,
+      "url": "http://localhost:8080/client/cache-size",
+      "name": "Client cache size",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 950,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_9ec8ce7cf69e477f8f252e60c11d5905",
+      "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
+      "modified": 1681809315591,
+      "created": 1681809313244,
+      "url": "http://localhost:8080/client/cache",
+      "name": "Client cache",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 975,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
       "_id": "req_c955c3f181d7422883f654d08897abd5",
       "parentId": "wrk_73dad3847b114ed9bb2d0331dd24e3e0",
-      "modified": 1681737574738,
+      "modified": 1681990103265,
       "created": 1681069538820,
       "url": "http://localhost:8080/client",
       "name": "Client update event",

@@ -29,7 +29,7 @@ public class ClientFactory {
                         .add(LdapConstants.CN, client.getName())
                         .build()
         );
-        client.setPassword(secretService.generateSecret());
+        //client.setPassword(secretService.generateSecret());
     }
 
     public String getClientFullName(String clientSimpleName, String organisationprimaryAssetId) {

@@ -31,7 +31,7 @@ class AccessServiceSpec extends Specification {
                 ldapService,
                 assetService,
                 oauthService,
-                new SecretService()
+                new SecretService(), db, componentService
         )
         accessObjectService = new AccessObjectService(organisationBase)
         accessService = new AccessService(

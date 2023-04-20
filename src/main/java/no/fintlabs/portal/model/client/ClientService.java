@@ -5,6 +5,8 @@ import no.fintlabs.portal.ldap.LdapService;
 import no.fintlabs.portal.model.FintCustomerObjectWithSecretsService;
 import no.fintlabs.portal.model.asset.Asset;
 import no.fintlabs.portal.model.asset.AssetService;
+import no.fintlabs.portal.model.component.Component;
+import no.fintlabs.portal.model.component.ComponentService;
 import no.fintlabs.portal.model.organisation.Organisation;
 import no.fintlabs.portal.oauth.NamOAuthClientService;
 import no.fintlabs.portal.oauth.OAuthClient;
@@ -19,7 +21,8 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class ClientService implements FintCustomerObjectWithSecretsService<Client> {
+public class ClientService
+        implements FintCustomerObjectWithSecretsService<Client> {
 
     private final ClientFactory clientFactory;
 
@@ -31,12 +34,19 @@ public class ClientService implements FintCustomerObjectWithSecretsService<Clien
 
     private final SecretService secretService;
 
-    public ClientService(ClientFactory clientFactory, LdapService ldapService, AssetService assetService, NamOAuthClientService namOAuthClientService, SecretService secretService) {
+    private final ClientDBRepository db;
+
+
+
+    public ClientService(ClientFactory clientFactory, LdapService ldapService, AssetService assetService,
+                         NamOAuthClientService namOAuthClientService, SecretService secretService,
+                         ClientDBRepository db) {
         this.clientFactory = clientFactory;
         this.ldapService = ldapService;
         this.assetService = assetService;
         this.namOAuthClientService = namOAuthClientService;
         this.secretService = secretService;
+        this.db = db;
     }
 
     public Optional<Client> addClient(Client client, Organisation organisation) {
@@ -56,9 +66,19 @@ public class ClientService implements FintCustomerObjectWithSecretsService<Clien
             Asset primaryAsset = assetService.getPrimaryAsset(organisation);
             assetService.linkClientToAsset(primaryAsset, client);
         }
+        return getClientByDn(client.getDn())
+                .map(createdClient -> {
+                    createdClient.setPublicKey(client.getPublicKey());
+                    encryptPassword(createdClient, createdClient.getPublicKey());
+                    encryptClientSecret(createdClient, createdClient.getPublicKey());
+                    db.save(createdClient);
 
-        return getClientByDn(client.getDn());
+                    return createdClient;
+                });
+
     }
+
+
 
     public List<Client> getClients(String orgName) {
 
@@ -75,20 +95,13 @@ public class ClientService implements FintCustomerObjectWithSecretsService<Clien
                 namOAuthClientService.getOAuthClient(client.getClientId()).getClientSecret(),
                 publicKeyString
         ));
+        db.save(client);
     }
 
     @Override
     public void encryptPassword(Client client, String privateKeyString) {
-//        String password = secretService.generateSecret();
-//        //client.setPassword(password);
-//        boolean updateEntry = ldapService.updateEntry(
-//                ClientPassword
-//                        .builder()
-//                        .password(password)
-//                        .build()
-//        );
-//        log.debug("Updating password is successfully: {}", updateEntry);
         client.setPassword(secretService.encryptPassword(resetClientPassword(client), privateKeyString));
+        db.save(client);
     }
 
     public Optional<Client> getClientByName(String clientName, Organisation organisation) {
@@ -96,12 +109,25 @@ public class ClientService implements FintCustomerObjectWithSecretsService<Clien
     }
 
     public Optional<Client> getClientByDn(String dn) {
-        return Optional.ofNullable(ldapService.getEntry(dn, Client.class));
+        return db
+                .findById(LdapNameBuilder.newInstance(dn).build())
+                .or(() -> Optional.ofNullable(ldapService.getEntry(dn, Client.class))
+                        .map(db::save));
     }
 
     public Optional<Client> updateClient(Client client) {
         if (ldapService.updateEntry(client)) {
-            return getClientByDn(client.getDn());
+            return getClientByDn(client.getDn())
+                    .map(updatedClient -> db.findById(LdapNameBuilder.newInstance(updatedClient.getDn()).build())
+                            .map(clientFromDb -> {
+                                updatedClient.setClientSecret(clientFromDb.getClientSecret());
+                                updatedClient.setPassword(clientFromDb.getPassword());
+                                updatedClient.setPublicKey(clientFromDb.getPublicKey());
+                                db.save(updatedClient);
+
+                                return updatedClient;
+                            })
+                            .orElseGet(() -> db.save(updatedClient)));
         }
         return Optional.empty();
     }
@@ -111,11 +137,12 @@ public class ClientService implements FintCustomerObjectWithSecretsService<Clien
             namOAuthClientService.removeOAuthClient(client.getClientId());
         }
         ldapService.deleteEntry(client);
+        db.delete(client);
         return Optional.of(client);
     }
 
 
-    private String  resetClientPassword(Client client) {
+    private String resetClientPassword(Client client) {
         String password = secretService.generateSecret();
         boolean updateEntry = ldapService.updateEntry(
                 ClientPassword

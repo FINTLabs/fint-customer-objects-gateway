@@ -1,7 +1,5 @@
 package no.fintlabs.portal.model.client;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,55 +12,86 @@ import org.springframework.ldap.odm.annotations.Transient;
 import org.springframework.ldap.support.LdapNameBuilder;
 
 import javax.naming.Name;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
-@ApiModel
 @ToString(exclude = {"password", "clientSecret"})
 @Entry(objectClasses = {"fintClient", "inetOrgPerson", "organizationalPerson", "person", "top"})
+@Entity
+@Table(name = "client")
 public final class Client implements BasicLdapEntryWithSecrets {
 
     @Id
+    @javax.persistence.Id
     private Name dn;
 
+    @Getter
+    @Setter
     @Attribute(name = "cn")
     private String name;
 
+    @Getter
+    @Setter
     @Attribute(name = "fintClientManaged")
     private boolean isManaged;
 
+    @Getter
+    @Setter
     @Attribute(name = "sn")
     private String shortDescription;
 
+    @Getter
+    @Setter
     @Attribute(name = "fintClientAssetId")
     private String assetId;
 
+    @Getter
+    @Setter
     @Attribute(name = "fintClientAsset")
     private String asset;
 
+    @Getter
+    @Setter
     @Attribute(name = "description")
+    @Column(length = 4096)
     private String note;
 
+    @Getter
+    @Setter
     @Transient
-    //@Attribute(name = "userPassword")
+    @Column(length = 512)
     private String password;
 
+    @Getter
+    @Setter
     @Transient
+    @Column(length = 512)
     private String clientSecret;
 
     @Transient
     @Getter
     @Setter
+    @Column(length = 512)
     private String publicKey;
 
+    @Getter
+    @Setter
     @Attribute(name = "fintOAuthClientId")
     private String clientId;
 
+    @Getter
     @Attribute(name = "fintClientComponents")
+    @ElementCollection
     private List<String> components;
 
+    @Getter
     @Attribute(name = "fintClientAccessPackages")
+    @ElementCollection
     private List<String> accessPackages;
 
     public Client() {
@@ -85,79 +114,6 @@ public final class Client implements BasicLdapEntryWithSecrets {
         accessPackages.add(accessPackageDn);
     }
 
-    public List<String> getAccessPackages() {
-        return accessPackages;
-    }
-
-    public List<String> getComponents() {
-        return components;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getShortDescription() {
-        return shortDescription;
-    }
-
-    public void setShortDescription(String shortDescription) {
-        this.shortDescription = shortDescription;
-    }
-
-    public String getAssetId() {
-        return assetId;
-    }
-
-    public void setAssetId(String orgId) {
-        this.assetId = orgId;
-    }
-
-    public String getAsset() {
-        return asset;
-    }
-
-    public void setAsset(String asset) {
-        this.asset = asset;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
-    }
-
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setClientSecret(String clientSecret) {
-        this.clientSecret = clientSecret;
-    }
-
-    public String getClientSecret() {
-        return clientSecret;
-    }
-
-    public boolean isManaged() {
-        return isManaged;
-    }
-
-    public void setManaged(boolean managed) {
-        isManaged = managed;
-    }
-
     @Override
     public String getDn() {
         if (dn != null) {
@@ -175,14 +131,6 @@ public final class Client implements BasicLdapEntryWithSecrets {
     @Override
     public void setDn(Name dn) {
         this.dn = dn;
-    }
-
-    public String getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
     }
 
     @Override

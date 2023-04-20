@@ -17,7 +17,7 @@ import javax.naming.Name;
 @AllArgsConstructor
 @ToString(exclude = {"password"})
 @Entry(objectClasses = {"fintClient", "inetOrgPerson", "organizationalPerson", "person", "top"})
-public class ClientPassword implements BasicLdapEntry {
+public final class ClientPassword implements BasicLdapEntry {
 
     @Id
     private Name dn;

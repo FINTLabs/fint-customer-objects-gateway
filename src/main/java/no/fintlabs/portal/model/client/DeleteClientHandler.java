@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class DeleteClientHandler extends FintCustomerObjectWithSecretsHandler<Client, ClientEvent, ClientService> {
 
-    protected DeleteClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientCacheRepository clientCacheRepository) {
-        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository, clientService);
+    protected DeleteClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService) {
+        super(entityTopicService, entityProducerFactory, Client.class, /*clientCacheRepository, */clientService);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class DeleteClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
                 );
 
         sendDelete(client.getDn());
-        removeFromCache(client);
+        //removeFromCache(client);
 
         return client;
     }

@@ -57,7 +57,7 @@ class OrganisationServiceSpec extends Specification {
                 ldapService,
                 assetService,
                 oauthService,
-                new SecretService()
+                new SecretService(), db, componentService
         )
         organisationObjectService = new OrganisationObjectService(organisationBase: organisationBase, ldapService: ldapService)
         componentService = new ComponentService(

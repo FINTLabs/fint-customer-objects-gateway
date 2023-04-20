@@ -21,8 +21,8 @@ public class UpdateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
     private final ComponentService componentService;
 
 
-    protected UpdateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ComponentService componentService, ClientCacheRepository clientCacheRepository) {
-        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository, clientService);
+    protected UpdateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ComponentService componentService) {
+        super(entityTopicService, entityProducerFactory, Client.class, /*clientCacheRepository, */clientService);
         this.componentService = componentService;
     }
 
@@ -49,19 +49,19 @@ public class UpdateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while updating client."));
 
         updatedClient.setPublicKey(consumerRecord.value().getObject().getPublicKey());
-        Client updatedClientWithSecrets = getFromCache(updatedClient)
-                .map(client -> {
-                    updatedClient.setPassword(client.getPassword());
-                    updatedClient.setClientSecret(client.getClientSecret());
-                    return updatedClient;
-                })
-                .orElseGet(() -> {
-                    ensureSecrets(consumerRecord, updatedClient);
-                    return updatedClient;
-                });
+//        Client updatedClientWithSecrets = getFromCache(updatedClient)
+//                .map(client -> {
+//                    updatedClient.setPassword(client.getPassword());
+//                    updatedClient.setClientSecret(client.getClientSecret());
+//                    return updatedClient;
+//                })
+//                .orElseGet(() -> {
+//                    ensureSecrets(consumerRecord, updatedClient);
+//                    return updatedClient;
+//                });
 
-        send(updatedClientWithSecrets);
-        updateCache(updatedClientWithSecrets);
+        //send(updatedClientWithSecrets);
+        //updateCache(updatedClientWithSecrets);
 
         return updatedClient;
     }

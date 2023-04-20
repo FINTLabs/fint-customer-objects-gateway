@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 public class GetClientHandler extends FintCustomerObjectWithSecretsHandler<Client, ClientEvent, ClientService> {
 
 
-    protected GetClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientCacheRepository clientCacheRepository) {
-        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository, clientService);
+    protected GetClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService) {
+        super(entityTopicService, entityProducerFactory, Client.class, /*clientCacheRepository, */clientService);
     }
 
     @Override
@@ -25,23 +25,24 @@ public class GetClientHandler extends FintCustomerObjectWithSecretsHandler<Clien
 
     @Override
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
-        return getFromCache(consumerRecord.value().getObject())
-                .map(client -> {
-                    log.debug("Found client in cache {}", client.getDn());
-                    return client;
-                })
-                .orElseGet(() ->
-                        objectService.getClientByDn(consumerRecord.value().getObject().getDn())
-                                .map(client -> {
-                                    log.debug("Cound not find client ({}) in cache. Getting the client for LDAP", client.getDn());
-
-                                    ensureSecrets(consumerRecord, client);
-                                    send(client);
-                                    addToCache(client);
-
-                                    return client;
-                                })
-                                .orElseThrow(() -> new RuntimeException("Unable to find client: " + consumerRecord.value().getObject().getDn()))
-                );
+        return null;
+//        return getFromCache(consumerRecord.value().getObject())
+//                .map(client -> {
+//                    log.debug("Found client in cache {}", client.getDn());
+//                    return client;
+//                })
+//                .orElseGet(() ->
+//                        objectService.getClientByDn(consumerRecord.value().getObject().getDn())
+//                                .map(client -> {
+//                                    log.debug("Cound not find client ({}) in cache. Getting the client for LDAP", client.getDn());
+//
+//                                    ensureSecrets(consumerRecord, client);
+//                                    send(client);
+//                                    addToCache(client);
+//
+//                                    return client;
+//                                })
+//                                .orElseThrow(() -> new RuntimeException("Unable to find client: " + consumerRecord.value().getObject().getDn()))
+//                );
     }
 }

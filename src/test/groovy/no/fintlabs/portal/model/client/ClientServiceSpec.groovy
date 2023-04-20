@@ -33,7 +33,7 @@ class ClientServiceSpec extends Specification {
                 ldapService,
                 assetService,
                 oauthService,
-                new SecretService()
+                new SecretService(), db, componentService
         )
 
         organisation = organisation = new Organisation(primaryAssetId: "test.no", name: "test_no")

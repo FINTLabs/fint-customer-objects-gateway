@@ -5,14 +5,13 @@ import no.fintlabs.portal.ldap.LdapService;
 import no.fintlabs.portal.model.FintCustomerObjectWithSecretsService;
 import no.fintlabs.portal.model.asset.Asset;
 import no.fintlabs.portal.model.asset.AssetService;
-import no.fintlabs.portal.model.component.Component;
-import no.fintlabs.portal.model.component.ComponentService;
 import no.fintlabs.portal.model.organisation.Organisation;
 import no.fintlabs.portal.oauth.NamOAuthClientService;
 import no.fintlabs.portal.oauth.OAuthClient;
 import no.fintlabs.portal.utilities.SecretService;
 import org.springframework.ldap.support.LdapNameBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -21,6 +20,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@Transactional
 public class ClientService
         implements FintCustomerObjectWithSecretsService<Client> {
 
@@ -35,7 +35,6 @@ public class ClientService
     private final SecretService secretService;
 
     private final ClientDBRepository db;
-
 
 
     public ClientService(ClientFactory clientFactory, LdapService ldapService, AssetService assetService,
@@ -77,7 +76,6 @@ public class ClientService
                 });
 
     }
-
 
 
     public List<Client> getClients(String orgName) {
@@ -146,7 +144,9 @@ public class ClientService
             namOAuthClientService.removeOAuthClient(client.getClientId());
         }
         ldapService.deleteEntry(client);
-        db.delete(client);
+        db.findById(LdapNameBuilder.newInstance(Objects.requireNonNull(client.getDn())).build())
+                .map(Client::getName)
+                .ifPresent(db::deleteByName);
         return Optional.of(client);
     }
 

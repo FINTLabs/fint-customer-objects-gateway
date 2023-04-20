@@ -29,24 +29,5 @@ public class GetClientHandler extends FintCustomerObjectWithSecretsHandler<Clien
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
         return clientService.getClientByDn(consumerRecord.value().getObject().getDn())
                 .orElseThrow(() -> new RuntimeException("Unable to find client: " + consumerRecord.value().getObject().getDn()));
-
-//        return getFromCache(consumerRecord.value().getObject())
-//                .map(client -> {
-//                    log.debug("Found client in cache {}", client.getDn());
-//                    return client;
-//                })
-//                .orElseGet(() ->
-//                        objectService.getClientByDn(consumerRecord.value().getObject().getDn())
-//                                .map(client -> {
-//                                    log.debug("Cound not find client ({}) in cache. Getting the client for LDAP", client.getDn());
-//
-//                                    ensureSecrets(consumerRecord, client);
-//                                    send(client);
-//                                    addToCache(client);
-//
-//                                    return client;
-//                                })
-//                                .orElseThrow(() -> new RuntimeException("Unable to find client: " + consumerRecord.value().getObject().getDn()))
-//                );
     }
 }

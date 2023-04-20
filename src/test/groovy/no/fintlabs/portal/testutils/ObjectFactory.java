@@ -30,10 +30,12 @@ public enum ObjectFactory {
 
     public static Client newClient() {
         Client client = new Client();
+        client.setDn("cn=name");
         client.setName("TestClient");
         client.setNote("Test client for test organisation");
         client.setShortDescription("Test Client");
         client.setClientId("123");
+        client.setPublicKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx+1mDlIElhba0nN0wY7KWkctVsje+TYaycLZDoqW8sBBLLfU7icmRZtCtUnS1HptBKqUVYY94WKPfWEwCqP9EcWZr0wQ7iX4dBN/RYNsLwOknT520UkjliuY3ZIelsE0o8k/bcW2oqzHDrvtIVGfmUz8pS5+laIYN3EwyFKI/oJkIv2VPtD0XYorquckas/mMzk387kfNJIOn5o1Riuyd49NJeI0XJpgqBmPfHUsCcmmzucvXcK4q32RasE9o7l6MiFEhcK/evgBBONCFTobaVuo4Gu90+Y+laStKRRSMQNDqIYS+zo8id2TOSkEbG0pmZuEM5aSovLxkKjGNEN65wIDAQAB");
         return client;
     }
 

@@ -1,7 +1,10 @@
 package no.fintlabs.portal.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import no.fintlabs.portal.ldap.BasicLdapEntry;
 import org.springframework.util.StringUtils;
 
@@ -12,7 +15,6 @@ import java.lang.reflect.ParameterizedType;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-//@RequiredArgsConstructor
 public abstract class FintCustomerObjectEvent<T extends BasicLdapEntry> {
     private T object;
     private String orgId;
@@ -28,6 +30,7 @@ public abstract class FintCustomerObjectEvent<T extends BasicLdapEntry> {
     public boolean hasError() {
         return StringUtils.hasText(errorMessage);
     }
+
     @JsonIgnore
     public String getOperationWithType() {
         return String.format("%s-%s", operation.name(), getParameterClass().getSimpleName().toUpperCase());

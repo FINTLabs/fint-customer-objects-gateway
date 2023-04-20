@@ -15,8 +15,9 @@ public class GetClientHandler extends FintCustomerObjectWithSecretsHandler<Clien
 
     private final ClientService clientService;
 
-    protected GetClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientService clientService1) {
-        super(entityTopicService, entityProducerFactory, Client.class, /*clientCacheRepository, */clientService);
+    protected GetClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory,
+                               ClientService clientService, ClientService clientService1) {
+        super(entityTopicService, entityProducerFactory, Client.class, clientService);
         this.clientService = clientService1;
     }
 

@@ -10,7 +10,6 @@ import org.springframework.ldap.support.LdapNameBuilder;
 
 import javax.naming.Name;
 
-//@AllArgsConstructor
 @Jacksonized
 @Builder
 @NoArgsConstructor

@@ -2,8 +2,6 @@ package no.fintlabs.portal.model.client;
 
 import no.fintlabs.portal.model.organisation.Organisation;
 import no.fintlabs.portal.utilities.LdapConstants;
-import no.fintlabs.portal.utilities.PasswordUtility;
-import no.fintlabs.portal.utilities.SecretService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.support.LdapNameBuilder;
 import org.springframework.stereotype.Service;
@@ -15,10 +13,8 @@ public class ClientFactory {
 
     private final String organisationBase;
 
-    private final SecretService secretService;
 
-    public ClientFactory(SecretService secretService, @Value("${fint.ldap.organisation-base}") String organisationBase) {
-        this.secretService = secretService;
+    public ClientFactory(@Value("${fint.ldap.organisation-base}") String organisationBase) {
         this.organisationBase = organisationBase;
     }
 
@@ -29,7 +25,6 @@ public class ClientFactory {
                         .add(LdapConstants.CN, client.getName())
                         .build()
         );
-        //client.setPassword(secretService.generateSecret());
     }
 
     public String getClientFullName(String clientSimpleName, String organisationprimaryAssetId) {

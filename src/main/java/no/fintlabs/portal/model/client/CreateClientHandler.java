@@ -20,13 +20,11 @@ public class CreateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
     private final ComponentService componentService;
 
 
-    protected CreateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService,
-            /*ClientFactory clientFactory, ComponentService componentService*/
-                                  ClientFactory clientFactory, ComponentService componentService) {
-        super(entityTopicService, entityProducerFactory, Client.class,  clientService);
+    protected CreateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory,
+                                  ClientService clientService, ClientFactory clientFactory,
+                                  ComponentService componentService) {
+        super(entityTopicService, entityProducerFactory, Client.class, clientService);
         this.clientFactory = clientFactory;
-        //this.clientFactory = clientFactory;
-        //this.componentService = componentService;
         this.componentService = componentService;
     }
 
@@ -46,7 +44,6 @@ public class CreateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
     private Client getOrCreateClient(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
         String clientDn = clientFactory.getClientDn(consumerRecord.value().getObject().getName(), organisation);
         Client client = consumerRecord.value().getObject();
-        //client.setDn(clientDn);
 
         return objectService.getClientByDn(clientDn)
                 .orElseGet(() -> objectService.addClient(client, organisation)

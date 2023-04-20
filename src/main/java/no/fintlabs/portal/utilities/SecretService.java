@@ -37,12 +37,6 @@ public class SecretService {
     }
 
     public String generateSecret() {
-//        String[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890-=!@#$%^&*()_+:<>{}[]".split("");
-//        StringBuilder secret = new StringBuilder();
-//        for (int i = 0; i < 50; i++) {
-//            secret.append(characters[(int) Math.floor(Math.random() * characters.length)]);
-//        }
-//        return secret.toString();
         return RandomStringUtils.randomAlphanumeric(32);
     }
 

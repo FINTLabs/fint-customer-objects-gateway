@@ -30,6 +30,9 @@ spec:
                 name: fint-customer-objects-gateway
             - secretRef:
                 name: fint-customer-objects-gateway-kafka
+            - secretRef:
+                name: fint-customer-objects-gateway-pg
+
           ports:
             - name: http
               containerPort: 8080

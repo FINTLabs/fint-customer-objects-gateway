@@ -25,8 +25,6 @@ public class DeleteClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
 
     @Override
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
-        log.info("{} event", consumerRecord.value().getOperationWithType());
-
         Client client = objectService
                 .getClientByDn(consumerRecord.value().getObject().getDn())
                 .flatMap(objectService::deleteClient)

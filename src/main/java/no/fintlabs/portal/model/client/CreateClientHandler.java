@@ -36,9 +36,10 @@ public class CreateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
 
     @Override
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
-        log.info("{} event", consumerRecord.value().getOperationWithType());
+        Client client = getOrCreateClient(consumerRecord, organisation);
+        send(client);
 
-        return getOrCreateClient(consumerRecord, organisation);
+        return client;
     }
 
     private Client getOrCreateClient(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {

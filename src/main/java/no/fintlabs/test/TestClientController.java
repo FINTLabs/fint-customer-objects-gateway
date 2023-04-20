@@ -117,6 +117,21 @@ public class TestClientController {
                 .orElse(ResponseEntity.internalServerError().build());
     }
 
+    @PostMapping("password/reset")
+    public ResponseEntity<ClientEvent> resetClientPasswordClientEvent(@RequestBody ClientEvent clientEvent) {
+
+        clientEvent.setOperation(FintCustomerObjectEvent.Operation.RESET_PASSWORD);
+        return requestProducerService
+                .get(clientEvent)
+                .map(ce -> {
+                    if (ce.hasError()) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(ce);
+                    }
+                    return ResponseEntity.ok(ce);
+                })
+                .orElse(ResponseEntity.internalServerError().build());
+    }
+
     @PostMapping("decrypt")
     public ResponseEntity<Client> decryptClient(@RequestBody ClientEvent clientEvent) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 

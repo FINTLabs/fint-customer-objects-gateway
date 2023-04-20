@@ -8,12 +8,12 @@ import java.security.KeyPairGenerator
 
 class SecretServiceSpec extends Specification {
 
-    def passwordFactory
+    def secretService
     def publicKey
     def privateKey
 
     void setup() {
-        passwordFactory = new SecretService()
+        secretService = new SecretService()
 
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA")
         generator.initialize(2048)
@@ -29,7 +29,7 @@ class SecretServiceSpec extends Specification {
 
         when:
 
-        def encryptPassword = passwordFactory.encryptPassword(clearTextPassword, Base64.getEncoder().encodeToString(publicKey.getEncoded()))
+        def encryptPassword = secretService.encrypt(clearTextPassword, Base64.getEncoder().encodeToString(publicKey.getEncoded()))
         def decryptedPassword = DecryptionHelper.decrypt(privateKey, encryptPassword)
 
         then:
@@ -39,7 +39,7 @@ class SecretServiceSpec extends Specification {
 
     def "Generate secret should return a random string of 32 characters"() {
         when:
-        def secret = passwordFactory.generateSecret()
+        def secret = secretService.generateSecret()
 
         then:
         secret.length() == 32

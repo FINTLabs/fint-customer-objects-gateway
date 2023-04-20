@@ -68,7 +68,7 @@ public class ClientService
         return getClientByDn(client.getDn())
                 .map(createdClient -> {
                     createdClient.setPublicKey(client.getPublicKey());
-                    encryptPassword(createdClient, createdClient.getPublicKey());
+                    resetAndEncryptPassword(createdClient, createdClient.getPublicKey());
                     encryptClientSecret(createdClient, createdClient.getPublicKey());
                     db.save(createdClient);
 
@@ -97,7 +97,7 @@ public class ClientService
     }
 
     @Override
-    public void encryptPassword(Client client, String privateKeyString) {
+    public void resetAndEncryptPassword(Client client, String privateKeyString) {
         client.setPassword(secretService.encryptPassword(resetClientPassword(client), privateKeyString));
         db.save(client);
     }

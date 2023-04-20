@@ -6,7 +6,7 @@ public interface FintCustomerObjectWithSecretsService<T extends BasicLdapEntryWi
 
     void encryptClientSecret(T object, String publicKeyString);
 
-    void encryptPassword(T object, String privateKeyString);
+    void resetAndEncryptPassword(T object, String privateKeyString);
 
 
 }

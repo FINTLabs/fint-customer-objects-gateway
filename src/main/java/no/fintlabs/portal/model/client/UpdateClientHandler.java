@@ -35,8 +35,6 @@ public class UpdateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
     @Override
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
 
-        log.info("{} event", consumerRecord.value().getOperationWithType());
-
         Client desiredClient = consumerRecord.value().getObject();
         desiredClient.clearSecrets();
 
@@ -48,6 +46,7 @@ public class UpdateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
 
         Client updatedClient = objectService.updateClient(desiredClient)
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while updating client."));
+        send(updatedClient);
 
         return updatedClient;
     }

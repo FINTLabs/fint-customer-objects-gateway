@@ -18,6 +18,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class FintCustomerObjectRequestBroker<E extends FintCustomerObjectEvent<T>, T extends BasicLdapEntry> {
@@ -55,7 +56,7 @@ public abstract class FintCustomerObjectRequestBroker<E extends FintCustomerObje
                                 fintCustomerObjectEntityHandler.operation(),
                                 fintCustomerObjectEntityHandler)
                 );
-        log.info("Registered {} handlers", handlers.size());
+        log.info("Registered {} handlers ({})", handlers.size(), handlers.stream().map(FintCustomerObjectHandler::operation).collect(Collectors.joining(", ")));
 
     }
 

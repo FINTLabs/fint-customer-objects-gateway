@@ -9,7 +9,7 @@ class ClientFactorySpec extends Specification {
     def organisation
 
     void setup() {
-        clientFactory = new ClientFactory(new SecretService(), "ou=org,o=fint")
+        clientFactory = new ClientFactory("ou=org,o=fint")
         organisation = new Organisation(primaryAssetId: "test.no", name: "test_no")
     }
 
@@ -21,7 +21,7 @@ class ClientFactorySpec extends Specification {
         clientFactory.setupClient(client, new Organisation(name: "orgName"))
 
         then:
-        client.password != null
+        //client.password != null
         client.dn.contains("orgName")
         client.name != null
     }

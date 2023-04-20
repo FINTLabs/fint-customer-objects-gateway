@@ -9,8 +9,11 @@ import no.fintlabs.portal.testutils.ObjectFactory
 import no.fintlabs.portal.utilities.SecretService
 import spock.lang.Specification
 
+import javax.naming.Name
 import java.security.KeyPair
 import java.security.KeyPairGenerator
+
+import static no.fintlabs.portal.testutils.ObjectFactory.newClient
 
 class ClientServiceSpec extends Specification {
 
@@ -20,6 +23,7 @@ class ClientServiceSpec extends Specification {
     private oauthService
     private assetService
     private organisation
+    private db
 
     def setup() {
         def organisationBase = "ou=org,o=fint"
@@ -27,13 +31,14 @@ class ClientServiceSpec extends Specification {
         ldapService = Mock(LdapService)
         oauthService = Mock(NamOAuthClientService)
         assetService = Mock(AssetService)
-        clientFactory = new ClientFactory(new SecretService(), organisationBase)
+        db = Mock(ClientDBRepository)
+        clientFactory = new ClientFactory(organisationBase)
         clientService = new ClientService(
                 clientFactory,
                 ldapService,
                 assetService,
                 oauthService,
-                new SecretService()
+                new SecretService(), db
         )
 
         organisation = organisation = new Organisation(primaryAssetId: "test.no", name: "test_no")
@@ -42,7 +47,7 @@ class ClientServiceSpec extends Specification {
 
     def "Add Client"() {
         given:
-        def client = ObjectFactory.newClient()
+        def client = newClient()
 
         when:
         def createdClient = clientService.addClient(client, new Organisation(name: "name", primaryAssetId: "test.no"))
@@ -53,7 +58,10 @@ class ClientServiceSpec extends Specification {
         createdClient.get().name != null
         1 * ldapService.createEntry(_ as Client) >> true
         1 * ldapService.getEntry(_ as String, Client.class) >> client
-        1 * oauthService.addOAuthClient(_ as String) >> new OAuthClient()
+        1 * oauthService.addOAuthClient(_ as String) >> new OAuthClient(clientId: "id")
+        1 * oauthService.getOAuthClient(_ as String) >> new OAuthClient(clientId: "id", clientSecret: "secret")
+        1 * db.findById(_ as Name) >> Optional.empty()
+        4 * db.save(_ as Client) >> client
     }
 
     def "Get Clients"() {
@@ -62,36 +70,41 @@ class ClientServiceSpec extends Specification {
 
         then:
         clients.size() == 2
-        1 * ldapService.getAll(_ as String, _ as Class) >> Arrays.asList(ObjectFactory.newClient(), ObjectFactory.newClient())
+        1 * ldapService.getAll(_ as String, _ as Class) >> Arrays.asList(newClient(), newClient())
         //2 * oauthService.getOAuthClient(_ as String) >> ObjectFactory.newOAuthClient()
     }
 
     def "Get Client"() {
+        given:
+        def c = newClient()
+
         when:
-        def client = clientService.getClientByName(UUID.randomUUID().toString(), organisation)
+        def client = clientService.getClientByName(c.getName(), organisation)
 
         then:
         client.isPresent()
-        1 * ldapService.getEntry(_ as String, _ as Class) >> ObjectFactory.newClient()
+        1 * ldapService.getEntry(_ as String, _ as Class) >> c
+        1 * db.findById(_ as Name) >> Optional.empty()
+        1 * db.save(_ as Client) >> c
+
+
         //1 * oauthService.getOAuthClient(_ as String) >> ObjectFactory.newOAuthClient()
     }
 
-    def "Get Adapter OpenID Secret"() {
+    def "Get Client Secret"() {
         when:
-        def client = clientService.getClientByName(UUID.randomUUID().toString(),         organisation = new Organisation(primaryAssetId: "test.no", name: "test_no")
-        )
-        def secret = clientService.getClientSecret(client.get())
+        def secret = clientService.getClientSecret(newClient())
 
         then:
         secret
-        1 * ldapService.getEntry(_ as String, _ as Class) >> ObjectFactory.newClient()
         1 * oauthService.getOAuthClient(_ as String) >> ObjectFactory.newOAuthClient()
+
     }
 
 
     def "Update Client"() {
         given:
-        def client = ObjectFactory.newClient()
+        def client = newClient()
         client.setDn("cn=name")
         when:
         def updated = clientService.updateClient(client)
@@ -100,30 +113,39 @@ class ClientServiceSpec extends Specification {
         updated.isPresent()
         1 * ldapService.updateEntry(_ as Client) >> true
         1 * ldapService.getEntry(_ as String, _ as Class) >> client
-
+        1 * db.findById(_ as Name) >> Optional.empty()
+        1 * db.save(_ as Client) >> client
     }
 
     def "Delete Client"() {
+        given:
+        def client = newClient()
+        client.setDn("cn=name")
+
         when:
-        clientService.deleteClient(ObjectFactory.newClient())
+        clientService.deleteClient(client)
 
         then:
         1 * ldapService.deleteEntry(_ as Client)
+        1 * db.findById(_ as Name) >> Optional.empty()
+
     }
 
     def "Reset Client Password"() {
         given:
-        def client = ObjectFactory.newClient()
+        def client = newClient()
+        client.setDn("cn=name")
 
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA")
         generator.initialize(2048)
         KeyPair pair = generator.generateKeyPair()
 
         when:
-        clientService.resetClientPassword(client, Base64.getEncoder().encodeToString(pair.getPublic().getEncoded()))
+        def password = clientService.resetClientPassword(client)
 
         then:
-        1 * ldapService.updateEntry(_ as Client)
+        password
+        1 * ldapService.updateEntry(_ as ClientPassword) >> true
     }
 
 }

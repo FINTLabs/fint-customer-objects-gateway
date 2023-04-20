@@ -21,8 +21,9 @@ public class UpdateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
     private final ComponentService componentService;
 
 
-    protected UpdateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ComponentService componentService, ClientCacheRepository clientCacheRepository) {
-        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository, clientService);
+    protected UpdateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory,
+                                  ClientService clientService, ComponentService componentService) {
+        super(entityTopicService, entityProducerFactory, Client.class, clientService);
         this.componentService = componentService;
     }
 
@@ -47,10 +48,6 @@ public class UpdateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
 
         Client updatedClient = objectService.updateClient(desiredClient)
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while updating client."));
-
-        ensureSecrets(consumerRecord, updatedClient);
-        send(updatedClient);
-        updateCache(updatedClient);
 
         return updatedClient;
     }

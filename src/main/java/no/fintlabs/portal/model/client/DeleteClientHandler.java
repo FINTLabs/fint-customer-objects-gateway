@@ -13,8 +13,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class DeleteClientHandler extends FintCustomerObjectWithSecretsHandler<Client, ClientEvent, ClientService> {
 
-    protected DeleteClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientCacheRepository clientCacheRepository) {
-        super(entityTopicService, entityProducerFactory, Client.class, clientCacheRepository, clientService);
+    protected DeleteClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory,
+                                  ClientService clientService) {
+        super(entityTopicService, entityProducerFactory, Client.class, clientService);
     }
 
     @Override
@@ -26,14 +27,12 @@ public class DeleteClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
         log.info("{} event", consumerRecord.value().getOperationWithType());
 
-        Client client = objectService.getClientByDn(consumerRecord.value().getObject().getDn())
+        Client client = objectService
+                .getClientByDn(consumerRecord.value().getObject().getDn())
                 .flatMap(objectService::deleteClient)
-                .orElseThrow(() ->
-                        new RuntimeException("Unable to find client with dn: " + consumerRecord.value().getObject().getDn())
-                );
+                .orElseThrow(() -> new RuntimeException("Unable to find client with dn: " + consumerRecord.value().getObject().getDn()));
 
         sendDelete(client.getDn());
-        removeFromCache(client);
 
         return client;
     }

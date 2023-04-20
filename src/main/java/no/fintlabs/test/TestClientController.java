@@ -2,7 +2,6 @@ package no.fintlabs.test;
 
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.portal.model.client.Client;
-import no.fintlabs.portal.model.client.ClientCacheRepository;
 import no.fintlabs.portal.model.client.ClientEvent;
 import no.fintlabs.portal.utilities.SecretService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,6 +15,7 @@ import javax.crypto.NoSuchPaddingException;
 import java.security.*;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 @ConditionalOnProperty(prefix = "fint.customer-object-gateway", name = "mode", havingValue = "test")
@@ -27,14 +27,15 @@ public class TestClientController {
     private final PrivateKey privateKey;
     private final String publicKey;
 
-    private final ClientCacheRepository clientCacheRepository;
+    //private final ClientCacheRepository clientCacheRepository;
+
 
 
     private final ClientEventRequestProducerService requestProducerService;
 
-    public TestClientController(SecretService secretService, ClientCacheRepository clientCacheRepository, ClientEventRequestProducerService requestProducerService) throws NoSuchAlgorithmException {
+    public TestClientController(SecretService secretService, /*ClientCacheRepository clientCacheRepository,*/  ClientEventRequestProducerService requestProducerService) throws NoSuchAlgorithmException {
         this.secretService = secretService;
-        this.clientCacheRepository = clientCacheRepository;
+        //this.clientCacheRepository = clientCacheRepository;
         this.requestProducerService = requestProducerService;
 
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
@@ -125,12 +126,12 @@ public class TestClientController {
     }
 
     @GetMapping("cache-size")
-    public ResponseEntity<Integer> cacheSize() {
-        return ResponseEntity.ok(clientCacheRepository.size());
+    public ResponseEntity<Long> cacheSize() {
+        return ResponseEntity.ok(0L);
     }
 
     @GetMapping("cache")
     public ResponseEntity<Collection<Client>> cache() {
-        return ResponseEntity.ok(clientCacheRepository.objects());
+        return ResponseEntity.ok(Collections.emptyList());
     }
 }

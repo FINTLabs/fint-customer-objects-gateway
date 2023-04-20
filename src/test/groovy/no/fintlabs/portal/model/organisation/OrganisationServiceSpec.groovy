@@ -8,6 +8,7 @@ import no.fintlabs.portal.model.adapter.AdapterService
 import no.fintlabs.portal.model.asset.Asset
 import no.fintlabs.portal.model.asset.AssetService
 import no.fintlabs.portal.model.client.Client
+import no.fintlabs.portal.model.client.ClientDBRepository
 import no.fintlabs.portal.model.client.ClientFactory
 import no.fintlabs.portal.model.client.ClientService
 import no.fintlabs.portal.model.component.Component
@@ -20,6 +21,7 @@ import no.fintlabs.portal.testutils.ObjectFactory
 import no.fintlabs.portal.utilities.SecretService
 import spock.lang.Specification
 
+import javax.naming.Name
 import java.util.stream.Collectors
 import java.util.stream.IntStream
 
@@ -33,15 +35,17 @@ class OrganisationServiceSpec extends Specification {
     private oauthService
     private componentService
     private assetService
+    private db
 
     def setup() {
         def organisationBase = "ou=org,o=fint"
         def componentBase = "ou=comp,o=fint"
-        def clientObjectService = new ClientFactory(new SecretService(), organisationBase)
+        def clientObjectService = new ClientFactory(organisationBase)
         def adapterObjectService = new AdapterFactory(new SecretService(), organisationBase)
 
         ldapService = Mock(LdapService)
         oauthService = Mock(NamOAuthClientService)
+        db = Mock(ClientDBRepository)
         assetService = new AssetService(ldapService: ldapService)
         contactService = Mock(ContactService)
         adapterService = new AdapterService(
@@ -57,7 +61,8 @@ class OrganisationServiceSpec extends Specification {
                 ldapService,
                 assetService,
                 oauthService,
-                new SecretService()
+                new SecretService(),
+                 db
         )
         organisationObjectService = new OrganisationObjectService(organisationBase: organisationBase, ldapService: ldapService)
         componentService = new ComponentService(
@@ -142,6 +147,7 @@ class OrganisationServiceSpec extends Specification {
                 Arrays.asList(ObjectFactory.newAdapter(), ObjectFactory.newAdapter()) >>
                 Arrays.asList(ObjectFactory.newClient(), ObjectFactory.newClient()) >>
                 Arrays.asList(ObjectFactory.newAsset(), ObjectFactory.newAsset())
+        db.findById(_ as Name) >> Optional.empty()
     }
 
 
@@ -290,8 +296,10 @@ class OrganisationServiceSpec extends Specification {
 
         then:
         contact
-        1 * contactService.getContacts() >> IntStream.rangeClosed(1, 9).mapToObj(Integer.&toString).map { def o = ObjectFactory.newContact("11111111111")
-            o.nin = it * 11; o.dn = "dn=" + o.nin + ",ou=contacts,o=fint"; o }.collect(Collectors.toList())
+        1 * contactService.getContacts() >> IntStream.rangeClosed(1, 9).mapToObj(Integer.&toString).map {
+            def o = ObjectFactory.newContact("11111111111")
+            o.nin = it * 11; o.dn = "dn=" + o.nin + ",ou=contacts,o=fint"; o
+        }.collect(Collectors.toList())
     }
 
     def "Get Technical Contacts"() {
@@ -304,8 +312,10 @@ class OrganisationServiceSpec extends Specification {
 
         then:
         contacts.size() == 2
-        1 * contactService.getContacts() >> IntStream.rangeClosed(1, 9).mapToObj(Integer.&toString).map { def o = ObjectFactory.newContact("11111111111")
-            o.nin = it * 11; o.dn = "dn=" + o.nin + ",ou=contacts,o=fint"; o }.collect(Collectors.toList())
+        1 * contactService.getContacts() >> IntStream.rangeClosed(1, 9).mapToObj(Integer.&toString).map {
+            def o = ObjectFactory.newContact("11111111111")
+            o.nin = it * 11; o.dn = "dn=" + o.nin + ",ou=contacts,o=fint"; o
+        }.collect(Collectors.toList())
     }
 
     def "When adding admin role, all other roles should be removed"() {

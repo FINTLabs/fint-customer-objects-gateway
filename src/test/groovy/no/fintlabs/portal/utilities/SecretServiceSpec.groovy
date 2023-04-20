@@ -37,12 +37,12 @@ class SecretServiceSpec extends Specification {
         decryptedPassword == clearTextPassword
     }
 
-    def "Generate secret should return a random string of 50 characters"() {
+    def "Generate secret should return a random string of 32 characters"() {
         when:
         def secret = passwordFactory.generateSecret()
 
         then:
-        secret.length() == 50
+        secret.length() == 32
 
     }
 }

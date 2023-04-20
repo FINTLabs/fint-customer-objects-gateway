@@ -5,3 +5,17 @@ fint:
 spring:
   kafka:
     bootstrap-servers: localhost:9092
+  datasource:
+    url: jdbc:postgresql://localhost:5432/fint_customer_objects_gateway
+    username: postgres
+    password: postgres
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        enable_lazy_load_no_trans: true
+    hibernate:
+      ddl-auto: update

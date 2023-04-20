@@ -111,8 +111,17 @@ public class ClientService
     public Optional<Client> getClientByDn(String dn) {
         return db
                 .findById(LdapNameBuilder.newInstance(dn).build())
-                .or(() -> Optional.ofNullable(ldapService.getEntry(dn, Client.class))
-                        .map(db::save));
+                .map(client -> {
+                    log.debug("Found client ({}) in database", client.getName());
+                    return client;
+                })
+                .or(() -> {
+                    log.debug("Check if client ({}) is in LDAP...", dn);
+                    Optional<Client> client = Optional.ofNullable(ldapService.getEntry(dn, Client.class))
+                            .map(db::save);
+                    log.debug("Client exists: {}", client.isPresent());
+                    return client;
+                });
     }
 
     public Optional<Client> updateClient(Client client) {

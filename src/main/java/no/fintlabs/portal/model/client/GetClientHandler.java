@@ -13,9 +13,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class GetClientHandler extends FintCustomerObjectWithSecretsHandler<Client, ClientEvent, ClientService> {
 
+    private final ClientService clientService;
 
-    protected GetClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService) {
+    protected GetClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory, ClientService clientService, ClientService clientService1) {
         super(entityTopicService, entityProducerFactory, Client.class, /*clientCacheRepository, */clientService);
+        this.clientService = clientService1;
     }
 
     @Override
@@ -25,7 +27,9 @@ public class GetClientHandler extends FintCustomerObjectWithSecretsHandler<Clien
 
     @Override
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
-        return null;
+        return clientService.getClientByDn(consumerRecord.value().getObject().getDn())
+                .orElseThrow(() -> new RuntimeException("Unable to find client: " + consumerRecord.value().getObject().getDn()));
+
 //        return getFromCache(consumerRecord.value().getObject())
 //                .map(client -> {
 //                    log.debug("Found client in cache {}", client.getDn());

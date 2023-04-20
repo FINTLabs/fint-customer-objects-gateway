@@ -122,10 +122,14 @@ public class ClientService
                 });
     }
 
+    public Optional<Client> getClientByDnFromLdap(String dn) {
+        return Optional.ofNullable(ldapService.getEntry(dn, Client.class));
+    }
+
     public Optional<Client> updateClient(Client client) {
         if (ldapService.updateEntry(client)) {
-            return getClientByDn(client.getDn())
-                    .map(updatedClient -> db.findById(LdapNameBuilder.newInstance(updatedClient.getDn()).build())
+            return getClientByDnFromLdap(client.getDn())
+                    .map(updatedClient -> db.findById(LdapNameBuilder.newInstance(Objects.requireNonNull(updatedClient.getDn())).build())
                             .map(clientFromDb -> {
                                 updatedClient.setClientSecret(clientFromDb.getClientSecret());
                                 updatedClient.setPassword(clientFromDb.getPassword());

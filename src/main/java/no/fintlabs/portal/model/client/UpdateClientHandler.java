@@ -48,7 +48,7 @@ public class UpdateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
         Client updatedClient = objectService.updateClient(desiredClient)
                 .orElseThrow(() -> new RuntimeException("An unexpected error occurred while updating client."));
 
-        updatedClient.setPublicKey(consumerRecord.value().getObject().getPublicKey());
+       // updatedClient.setPublicKey(consumerRecord.value().getObject().getPublicKey());
 //        Client updatedClientWithSecrets = getFromCache(updatedClient)
 //                .map(client -> {
 //                    updatedClient.setPassword(client.getPassword());

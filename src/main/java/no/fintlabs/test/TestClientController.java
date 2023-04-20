@@ -2,6 +2,7 @@ package no.fintlabs.test;
 
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.portal.model.client.Client;
+import no.fintlabs.portal.model.client.ClientDBRepository;
 import no.fintlabs.portal.model.client.ClientEvent;
 import no.fintlabs.portal.utilities.SecretService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -27,15 +28,16 @@ public class TestClientController {
     private final PrivateKey privateKey;
     private final String publicKey;
 
-    //private final ClientCacheRepository clientCacheRepository;
+
+    private final ClientDBRepository clientDBRepository;
 
 
 
     private final ClientEventRequestProducerService requestProducerService;
 
-    public TestClientController(SecretService secretService, /*ClientCacheRepository clientCacheRepository,*/  ClientEventRequestProducerService requestProducerService) throws NoSuchAlgorithmException {
+    public TestClientController(SecretService secretService,  ClientDBRepository clientDBRepository, ClientEventRequestProducerService requestProducerService) throws NoSuchAlgorithmException {
         this.secretService = secretService;
-        //this.clientCacheRepository = clientCacheRepository;
+        this.clientDBRepository = clientDBRepository;
         this.requestProducerService = requestProducerService;
 
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
@@ -127,11 +129,11 @@ public class TestClientController {
 
     @GetMapping("cache-size")
     public ResponseEntity<Long> cacheSize() {
-        return ResponseEntity.ok(0L);
+        return ResponseEntity.ok(clientDBRepository.count());
     }
 
     @GetMapping("cache")
     public ResponseEntity<Collection<Client>> cache() {
-        return ResponseEntity.ok(Collections.emptyList());
+        return ResponseEntity.ok(clientDBRepository.findAll());
     }
 }

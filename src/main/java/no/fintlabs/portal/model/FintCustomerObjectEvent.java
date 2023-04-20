@@ -46,6 +46,7 @@ public abstract class FintCustomerObjectEvent<T extends BasicLdapEntry> {
         CREATE,
         READ,
         UPDATE,
-        DELETE
+        DELETE,
+        RESET_PASSWORD
     }
 }

@@ -16,7 +16,7 @@ class LdapServiceSpec extends Specification {
 
     void setup() {
         ldapTemplate = Mock(LdapTemplate)
-        ldapService = new LdapService(ldapTemplate: ldapTemplate)
+        ldapService = new LdapService(ldapTemplate)
     }
 
     def "Create Entry"() {

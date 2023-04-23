@@ -1,7 +1,6 @@
 package no.fintlabs.portal.ldap;
 
 import no.fintlabs.portal.utilities.LdapUniqueNameUtility;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.support.LdapNameBuilder;
@@ -13,14 +12,19 @@ import java.util.List;
 @Service
 public class LdapService {
 
-    private final SearchControls searchControls;
+    private final LdapTemplate ldapTemplate;
 
-    @Autowired
-    private LdapTemplate ldapTemplate;
+    public LdapService(LdapTemplate ldapTemplate) {
+        this.ldapTemplate = ldapTemplate;
+    }
 
-    public LdapService() {
-        searchControls = new SearchControls();
+
+    private SearchControls searchControls() {
+        SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        searchControls.setReturningAttributes(null);
+
+        return searchControls;
     }
 
     public boolean createEntry(BasicLdapEntry basicLdapEntry) {
@@ -44,7 +48,7 @@ public class LdapService {
             List<T> ldapEntries = ldapTemplate.find(
                     LdapNameBuilder.newInstance(base).build(),
                     new EqualsFilter(LdapUniqueNameUtility.getUniqueNameAttribute(type), name),
-                    searchControls, type);
+                    searchControls(), type);
 
             if (ldapEntries != null && ldapEntries.size() == 1) {
                 return ldapEntries.get(0);
@@ -74,7 +78,7 @@ public class LdapService {
 
     public <T> List<T> getAll(String base, Class<T> type) {
         if (entryExists(base)) {
-            return ldapTemplate.findAll(LdapNameBuilder.newInstance(base).build(), searchControls, type);
+            return ldapTemplate.findAll(LdapNameBuilder.newInstance(base).build(), searchControls(), type);
         }
         return null;
     }

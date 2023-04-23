@@ -67,6 +67,11 @@ dependencies {
     testImplementation 'cglib:cglib-nodep:3.3.0'
     testImplementation 'org.spockframework:spock-spring:2.3-groovy-3.0'
     testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+    testImplementation 'org.springframework.ldap:spring-ldap-test'
+    testRuntimeOnly "com.unboundid:unboundid-ldapsdk:6.0.8"
+    testRuntimeOnly 'com.h2database:h2'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+
 }
 
 test {

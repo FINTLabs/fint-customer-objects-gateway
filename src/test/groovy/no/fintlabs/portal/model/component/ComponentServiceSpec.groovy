@@ -95,7 +95,7 @@ class ComponentServiceSpec extends Specification {
 
     def "Add Client to Component"() {
         given:
-        def client = ObjectFactory.newClient()
+        def client = ObjectFactory.newClientWithDn()
         def component = ObjectFactory.newComponent()
 
         client.setDn("name=c1")
@@ -112,8 +112,8 @@ class ComponentServiceSpec extends Specification {
     def "Remove Client from Component"() {
         given:
         def component = ObjectFactory.newComponent()
-        def c1 = ObjectFactory.newClient()
-        def c2 = ObjectFactory.newClient()
+        def c1 = ObjectFactory.newClientWithDn()
+        def c2 = ObjectFactory.newClientWithDn()
 
         c1.setDn("name=c1,o=fint")
         c2.setDn("name=c2,o=fint")

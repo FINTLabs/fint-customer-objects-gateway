@@ -28,6 +28,9 @@ public class ClientFactory {
     }
 
     public String getClientFullName(String clientSimpleName, String organisationprimaryAssetId) {
+        if (clientSimpleName.contains("@")) {
+            return clientSimpleName;
+        }
         return String.format("%s@client.%s", clientSimpleName, organisationprimaryAssetId);
     }
 

@@ -145,7 +145,7 @@ class OrganisationServiceSpec extends Specification {
         //4 * oauthService.getOAuthClient(_ as String) >> ObjectFactory.newOAuthClient()
         3 * ldapService.getAll(_ as String, _ as Class) >>
                 Arrays.asList(ObjectFactory.newAdapter(), ObjectFactory.newAdapter()) >>
-                Arrays.asList(ObjectFactory.newClient(), ObjectFactory.newClient()) >>
+                Arrays.asList(ObjectFactory.newClientWithDn(), ObjectFactory.newClientWithDn()) >>
                 Arrays.asList(ObjectFactory.newAsset(), ObjectFactory.newAsset())
         db.findById(_ as Name) >> Optional.empty()
     }
@@ -185,7 +185,7 @@ class OrganisationServiceSpec extends Specification {
         then:
         organisation.getComponents().size() == 1
         organisation.getComponents().get(0) == "ou=comp2,o=fint"
-        1 * ldapService.getAll(_ as String, _ as Class<List<Client>>) >> Arrays.asList(ObjectFactory.newClient())
+        1 * ldapService.getAll(_ as String, _ as Class<List<Client>>) >> Arrays.asList(ObjectFactory.newClientWithDn())
         1 * ldapService.getAll(_ as String, _ as Class<List<Adapter>>) >> Arrays.asList(ObjectFactory.newAdapter())
         1 * ldapService.updateEntry(_ as Organisation)
         3 * ldapService.updateEntry(_ as Component)

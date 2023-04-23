@@ -103,7 +103,7 @@ class AssetServiceSpec extends Specification {
         given:
         def asset = ObjectFactory.newAsset()
         asset.assetId = "test.no"
-        def client = ObjectFactory.newClient()
+        def client = ObjectFactory.newClientWithDn()
         client.dn = "cn=xyzzy,ou=clients,ou=test,ou=org,o=fint"
 
         when:
@@ -120,10 +120,10 @@ class AssetServiceSpec extends Specification {
         given:
         def asset = ObjectFactory.newAsset()
         asset.assetId = "test.no"
-        def client1 = ObjectFactory.newClient()
+        def client1 = ObjectFactory.newClientWithDn()
         client1.dn = "cn=xyzzy,ou=clients,ou=test,ou=org,o=fint"
         assetService.linkClientToAsset(asset,client1)
-        def client2 = ObjectFactory.newClient()
+        def client2 = ObjectFactory.newClientWithDn()
         client2.dn = "cn=abcabc,ou=clients,ou=test,ou=org,o=fint"
         assetService.linkClientToAsset(asset,client2)
 

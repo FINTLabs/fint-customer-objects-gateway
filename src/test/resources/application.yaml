@@ -1,0 +1,75 @@
+fint:
+  application-id: "test"
+  kafka:
+    application-id: "test"
+    default-replicas: 1
+    topic:
+      org-id: fintlabs.no
+      domain-context: test-domain-context
+  ldap:
+    url: "ldap://localhost:12345"
+    user: "uid=user"
+    password: "password"
+    component-base: "ou=apis,o=fint-test"
+    organisation-base: "ou=organisations,o=fint-test"
+    contact-base: "ou=contacts,o=fint-test"
+    access:
+      template-base: "ou=access,o=fint-test"
+  nam:
+    oauth:
+      username: "dummy"
+      password: "dummy"
+      idp-hostname: "localhost"
+      clientId: "dummy"
+      clientSecret: "dummy"
+
+#fint.ldap.access.template-base=ou\=access,o\=fint;
+#  fint.ldap.component-base=ou\=components,o\=fint
+  # fint.ldap.contact-base=ou\=contacts,o\=fint
+  # fint.ldap.organisation-base=ou\=organisations,o\=fint
+  # fint.ldap.password=BiL\6]\=Lh~#
+  # fint.ldap.url=ldap://localhost:3890
+  # fint.ldap.user=cn\=fint-portal-user,ou\=users,ou\=fintlabs,o\=fint
+  # fint.nam.oauth.clientId=65614873-80ca-49ba-a35f-c37afeed9d8b
+  # fint.nam.oauth.clientSecret=Z8RrEFrgRWj7u6o2GYZNba6T1Vm5eJqk-D4wRKm0uzKGVXmtL_NEm1gSiz1lpW-qKih5uaXxK92ZUjujBRXGHw
+  # fint.nam.oauth.idp-hostname=idp.test.felleskomponent.no
+  # fint.nam.oauth.password=BiL\6]\=Lh~
+  # fint.nam.oauth.username=fint-portal-user
+
+spring:
+  ldap:
+    embedded:
+      base-dn: o=fint-test
+      credential:
+        username: uid=user
+        password: password
+      ldif: classpath:schema.ldif
+      port: 12345
+      validation:
+        enabled: false
+  kafka:
+    consumer:
+      auto-offset-reset: earliest
+      group-id: test
+    bootstrap-servers: ${spring.embedded.kafka.brokers}
+    datasource:
+      driver-class-name: org.h2.Driver
+      url: jdbc:h2:mem:demo;DB_CLOSE_ON_EXIT=FALSE
+      username: sa
+      password:
+    jpa:
+      properties:
+        hibernate:
+          jdbc:
+            lob:
+              non_contextual_creation: true
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+          enable_lazy_load_no_trans: true
+      hibernate:
+        ddl-auto: update
+
+logging:
+  level:
+    org:
+      springframework:
+        ldap: TRACE

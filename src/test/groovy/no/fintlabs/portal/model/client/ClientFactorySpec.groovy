@@ -1,12 +1,11 @@
 package no.fintlabs.portal.model.client
 
 import no.fintlabs.portal.model.organisation.Organisation
-import no.fintlabs.portal.utilities.SecretService
 import spock.lang.Specification
 
 class ClientFactorySpec extends Specification {
-    def clientFactory
-    def organisation
+    private ClientFactory clientFactory
+    private Organisation organisation
 
     void setup() {
         clientFactory = new ClientFactory("ou=org,o=fint")
@@ -21,7 +20,6 @@ class ClientFactorySpec extends Specification {
         clientFactory.setupClient(client, new Organisation(name: "orgName"))
 
         then:
-        //client.password != null
         client.dn.contains("orgName")
         client.name != null
     }
@@ -43,5 +41,16 @@ class ClientFactorySpec extends Specification {
         dn != null
         dn.contains("clientUuid")
         dn.contains(organisation.getName())
+    }
+
+    def "getClientFullName should return full client name for both simple name and full name"() {
+
+        expect:
+        clientFactory.getClientFullName(clientName, assetId) == clientFullName
+
+        where:
+        clientName            | assetId   || clientFullName
+        "test"                | "test.no" || "test@client.test.no"
+        "test@client.test.no" | "test.no" || "test@client.test.no"
     }
 }

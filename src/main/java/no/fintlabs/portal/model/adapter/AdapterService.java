@@ -79,13 +79,13 @@ public class AdapterService implements FintCustomerObjectWithSecretsService<Adap
         return ldapService.getAll(adapterFactory.getAdapterBase(orgName).toString(), Adapter.class);
     }
 
-    public String getAdapterSecret(Adapter adapter) {
+    public String getClientSecret(Adapter adapter) {
         return namOAuthClientService.getOAuthClient(adapter.getClientId()).getClientSecret();
     }
 
     @Override
     public void encryptClientSecret(Adapter adapter, String publicKeyString) {
-        adapter.setAdapterSecret(secretService.encryptPassword(
+        adapter.setClientSecret(secretService.encryptPassword(
                 namOAuthClientService.getOAuthClient(adapter.getClientId()).getClientSecret(),
                 publicKeyString
         ));
@@ -127,7 +127,7 @@ public class AdapterService implements FintCustomerObjectWithSecretsService<Adap
             return getAdapterByDnFromLdap(adapter.getDn())
                     .map(updatedAdapter -> db.findById(LdapNameBuilder.newInstance(Objects.requireNonNull(updatedAdapter.getDn())).build())
                             .map(adapterFromDb -> {
-                                updatedAdapter.setAdapterSecret(adapterFromDb.getAdapterSecret());
+                                updatedAdapter.setClientSecret(adapterFromDb.getClientSecret());
                                 updatedAdapter.setPassword(adapterFromDb.getPassword());
                                 updatedAdapter.setPublicKey(adapterFromDb.getPublicKey());
                                 db.save(updatedAdapter);

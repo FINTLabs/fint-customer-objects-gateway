@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
-@ToString(exclude = {"password", "adapterSecret"})
+@ToString(exclude = {"password", "clientSecret"})
 @Entry(objectClasses = {"fintAdapter", "inetOrgPerson", "organizationalPerson", "person", "top"})
 @Entity
 @Table(name = "adapter")
@@ -71,7 +71,7 @@ public final class Adapter implements BasicLdapEntryWithSecrets {
     @Setter
     @Transient
     @Column(length = 512)
-    private String adapterSecret;
+    private String clientSecret;
 
     @Transient
     @Getter
@@ -110,6 +110,10 @@ public final class Adapter implements BasicLdapEntryWithSecrets {
         }
     }
 
+    public void removeComponent(String componentDn) {
+        components.removeIf(component -> component.equalsIgnoreCase(componentDn));
+    }
+
     @Override
     public String getDn() {
         if (dn != null) {
@@ -132,6 +136,7 @@ public final class Adapter implements BasicLdapEntryWithSecrets {
     @Override
     public void clearSecrets() {
         password = null;
-        adapterSecret = null;
+        clientSecret = null;
     }
+
 }

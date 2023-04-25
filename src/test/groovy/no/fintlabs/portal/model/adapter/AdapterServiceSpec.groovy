@@ -90,7 +90,7 @@ class AdapterServiceSpec extends Specification {
     def "Get Adapter OpenID Secret"() {
         when:
         def adapter = adapterService.getAdapter(UUID.randomUUID().toString(), UUID.randomUUID().toString())
-        def secret = adapterService.getAdapterSecret(adapter.get())
+        def secret = adapterService.getClientSecret(adapter.get())
 
         then:
         secret

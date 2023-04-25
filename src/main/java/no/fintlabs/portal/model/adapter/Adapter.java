@@ -90,11 +90,6 @@ public final class Adapter implements BasicLdapEntryWithSecrets {
     private List<String> components;
 
     @Getter
-    @Attribute(name = "fintAdapterAssets")
-    @ElementCollection
-    private List<String> assets;
-
-    @Getter
     @Attribute(name = "fintAdapterAccessPackages")
     @ElementCollection
     private List<String> accessPackages;

@@ -5,7 +5,6 @@ import no.fintlabs.portal.ldap.LdapService;
 import no.fintlabs.portal.model.FintCustomerObjectWithSecretsService;
 import no.fintlabs.portal.model.asset.Asset;
 import no.fintlabs.portal.model.asset.AssetService;
-import no.fintlabs.portal.model.client.ClientPassword;
 import no.fintlabs.portal.model.organisation.Organisation;
 import no.fintlabs.portal.oauth.NamOAuthClientService;
 import no.fintlabs.portal.oauth.OAuthClient;
@@ -36,9 +35,9 @@ public class AdapterService implements FintCustomerObjectWithSecretsService<Adap
 
     private final AdapterDBRepository db;
 
-    public AdapterService(AdapterFactory adapterFactory, LdapService ldapService,
-                          NamOAuthClientService namOAuthClientService, AssetService assetService,
-                          SecretService secretService, AdapterDBRepository db) {
+    public AdapterService(AdapterFactory adapterFactory, LdapService ldapService, AssetService assetService,
+                          NamOAuthClientService namOAuthClientService, SecretService secretService,
+                          AdapterDBRepository db) {
         this.adapterFactory = adapterFactory;
         this.ldapService = ldapService;
         this.namOAuthClientService = namOAuthClientService;
@@ -153,7 +152,7 @@ public class AdapterService implements FintCustomerObjectWithSecretsService<Adap
     private String resetAdapterPassword(Adapter adapter) {
         String password = secretService.generateSecret();
         boolean updateEntry = ldapService.updateEntry(
-                ClientPassword
+                AdapterPassword
                         .builder()
                         .dn(LdapNameBuilder.newInstance(Objects.requireNonNull(adapter.getDn())).build())
                         .password(password)

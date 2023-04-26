@@ -12,10 +12,7 @@ import org.springframework.ldap.odm.annotations.Transient;
 import org.springframework.ldap.support.LdapNameBuilder;
 
 import javax.naming.Name;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +34,7 @@ public final class Adapter implements BasicLdapEntryWithSecrets {
 
     @Getter
     @Setter
-    @Attribute(name = "fintClientManaged")
+    @Attribute(name = "fintAdapterManaged")
     private boolean isManaged;
 
     @Getter
@@ -47,13 +44,15 @@ public final class Adapter implements BasicLdapEntryWithSecrets {
 
     @Getter
     @Setter
-    @Attribute(name = "fintClientAssetId")
-    private String assetId;
+    @Attribute(name = "fintAdapterAssets")
+    @ElementCollection
+    private List<String> assets;
 
     @Getter
     @Setter
-    @Attribute(name = "fintClientAsset")
-    private String asset;
+    @Attribute(name = "fintAdapterAssetIds")
+    @ElementCollection
+    private List<String> assetIds;
 
     @Getter
     @Setter
@@ -96,7 +95,8 @@ public final class Adapter implements BasicLdapEntryWithSecrets {
 
     public Adapter() {
         components = new ArrayList<>();
-        accessPackages = new ArrayList<>();
+        assets = new ArrayList<>();
+        assetIds = new ArrayList<>();
     }
 
     public void addComponent(String componentDn) {
@@ -107,6 +107,26 @@ public final class Adapter implements BasicLdapEntryWithSecrets {
 
     public void removeComponent(String componentDn) {
         components.removeIf(component -> component.equalsIgnoreCase(componentDn));
+    }
+
+    public void addAssetId(String assetId) {
+        if (assetIds.stream().noneMatch(assetId::equalsIgnoreCase)) {
+            assetIds.add(assetId);
+        }
+    }
+
+    public void addAsset(String assetId) {
+        if (assets.stream().noneMatch(assetId::equalsIgnoreCase)) {
+            assets.add(assetId);
+        }
+    }
+
+    public void removeAsset(String assetId) {
+        assets.removeIf(asset -> asset.equalsIgnoreCase(assetId));
+    }
+
+    public void removeAssetId(String assetId) {
+        assetIds.removeIf(asset -> asset.equalsIgnoreCase(assetId));
     }
 
     @Override

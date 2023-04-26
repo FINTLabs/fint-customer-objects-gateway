@@ -46,7 +46,7 @@ public class TestAdapterController {
     }
 
     @GetMapping
-    public ResponseEntity<AdapterEvent> generateGetClientEvent(@PathVariable String dn) {
+    public ResponseEntity<AdapterEvent> generateGetAdapterEvent(@PathVariable String dn) {
 
         Adapter adapter = new Adapter();
         adapter.setDn(dn);
@@ -65,7 +65,7 @@ public class TestAdapterController {
     }
 
     @PostMapping()
-    public ResponseEntity<AdapterEvent> generateCreateClientEvent(@RequestBody AdapterEvent adapterEvent) {
+    public ResponseEntity<AdapterEvent> generateCreateAdapterEvent(@RequestBody AdapterEvent adapterEvent) {
         adapterEvent.setOperation(FintCustomerObjectEvent.Operation.CREATE);
         adapterEvent.getObject().setPublicKey(publicKey);
         Optional<AdapterEvent> adapterEventResponse = requestProducerService.get(adapterEvent);
@@ -81,7 +81,7 @@ public class TestAdapterController {
     }
 
     @PutMapping()
-    public ResponseEntity<AdapterEvent> generateUpdateClientEvent(@RequestBody AdapterEvent adapterEvent) {
+    public ResponseEntity<AdapterEvent> generateUpdateAdapterEvent(@RequestBody AdapterEvent adapterEvent) {
 
         adapterEvent.setOperation(FintCustomerObjectEvent.Operation.UPDATE);
         adapterEvent.getObject().setPublicKey(publicKey);
@@ -97,7 +97,7 @@ public class TestAdapterController {
     }
 
     @DeleteMapping()
-    public ResponseEntity<AdapterEvent> generateDeleteClientEvent(@RequestBody AdapterEvent adapterEvent) {
+    public ResponseEntity<AdapterEvent> generateDeleteAdapterEvent(@RequestBody AdapterEvent adapterEvent) {
 
         adapterEvent.setOperation(FintCustomerObjectEvent.Operation.DELETE);
         return requestProducerService
@@ -112,7 +112,7 @@ public class TestAdapterController {
     }
 
     @PostMapping("password/reset")
-    public ResponseEntity<AdapterEvent> resetClientPasswordClientEvent(@RequestBody AdapterEvent adapterEvent) {
+    public ResponseEntity<AdapterEvent> resetAdapterPasswordAdapterEvent(@RequestBody AdapterEvent adapterEvent) {
 
         adapterEvent.setOperation(FintCustomerObjectEvent.Operation.RESET_PASSWORD);
         return requestProducerService
@@ -127,7 +127,7 @@ public class TestAdapterController {
     }
 
     @PostMapping("decrypt")
-    public ResponseEntity<Adapter> decryptClient(@RequestBody AdapterEvent adapterEvent) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+    public ResponseEntity<Adapter> decryptAdapter(@RequestBody AdapterEvent adapterEvent) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 
         adapterEvent.getObject().setClientSecret(secretService.decrypt(privateKey, adapterEvent.getObject().getClientSecret()));
         adapterEvent.getObject().setPassword(secretService.decrypt(privateKey, adapterEvent.getObject().getPassword()));

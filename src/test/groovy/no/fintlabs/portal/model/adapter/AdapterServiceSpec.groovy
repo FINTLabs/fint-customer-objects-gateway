@@ -88,111 +88,97 @@ class AdapterServiceSpec extends Specification {
         CollectionUtils.isEqualCollection(ldapAdapter.getAccessPackages(), dbAdapter.get().getAccessPackages())
     }
 
-//    private adapterService
-//    private ldapService
-//    private adapterObjectService
-//    private oauthService
-//    private assetService
-//
-//    def setup() {
-//        def organisationBase = "ou=org,o=fint"
-//        ldapService = Mock(LdapService)
-//        assetService = Mock(AssetService)
-//        adapterObjectService = new AdapterFactory(new SecretService(), organisationBase)
-//        oauthService = Mock(NamOAuthClientService)
-//        adapterService = new AdapterService(
-//                adapterObjectService,
-//                ldapService,
-//                oauthService,
-//                assetService,
-//                new SecretService()
-//        )
-//
-//    }
-//
-//    def "Add Adapter"() {
-//        given:
-//        def adapter = ObjectFactory.newAdapter()
-//
-//        when:
-//        def created = adapterService.addAdapter(adapter, new Organisation(name: "name"))
-//
-//        then:
-//        created.isPresent()
-//        adapter.dn != null
-//        adapter.name != null
-//        1 * ldapService.createEntry(_ as Adapter) >> true
-//        1 * ldapService.getEntry(_ as String, _ as Class) >> adapter
-//        1 * oauthService.addOAuthClient(_ as String) >> new OAuthClient()
-//    }
-//
-//    def "Get Adapters"() {
-//        when:
-//        def adapters = adapterService.getAdapters(UUID.randomUUID().toString())
-//
-//        then:
-//        adapters.size() == 2
-//        1 * ldapService.getAll(_ as String, _ as Class) >> Arrays.asList(ObjectFactory.newAdapter(), ObjectFactory.newAdapter())
-//        //2 * oauthService.getOAuthClient(_ as String) >> ObjectFactory.newOAuthClient()
-//    }
-//
-//    def "Get Adapter"() {
-//        when:
-//        def adapter = adapterService.getAdapter(UUID.randomUUID().toString(), UUID.randomUUID().toString())
-//
-//        then:
-//        adapter.isPresent()
-//        1 * ldapService.getEntry(_ as String, _ as Class) >> ObjectFactory.newAdapter()
-//        //1 * oauthService.getOAuthClient(_ as String) >> ObjectFactory.newOAuthClient()
-//    }
-//
-//    def "Update Adapter"() {
-//        given:
-//        def adapter = ObjectFactory.newAdapter()
-//        adapter.setDn("cn=name")
-//
-//        when:
-//        def updated = adapterService.updateAdapter(adapter)
-//
-//        then:
-//        updated.isPresent()
-//        1 * ldapService.updateEntry(_ as Adapter) >> true
-//        1 * ldapService.getEntry(_ as String, _ as Class) >> adapter
-//
-//    }
-//
-//    def "Get Adapter OpenID Secret"() {
-//        when:
-//        def adapter = adapterService.getAdapter(UUID.randomUUID().toString(), UUID.randomUUID().toString())
-//        def secret = adapterService.getClientSecret(adapter.get())
-//
-//        then:
-//        secret
-//        1 * ldapService.getEntry(_ as String, _ as Class) >> ObjectFactory.newAdapter()
-//        1 * oauthService.getOAuthClient(_ as String) >> ObjectFactory.newOAuthClient()
-//    }
-//
-//    def "Delete Adapter"() {
-//        when:
-//        adapterService.deleteAdapter(ObjectFactory.newAdapter())
-//
-//        then:
-//        1 * ldapService.deleteEntry(_ as Adapter)
-//    }
-//
-//    def "Reset Adapter Password"() {
-//        given:
-//        def adapter = ObjectFactory.newAdapter()
-//
-//        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA")
-//        generator.initialize(2048)
-//        KeyPair pair = generator.generateKeyPair()
-//
-//        when:
-//        adapterService.resetAdapterPassword(adapter, Base64.getEncoder().encodeToString(pair.getPublic().getEncoded()))
-//
-//        then:
-//        1 * ldapService.updateEntry(_ as Adapter)
-//    }
+    def "A db should have password, client secret and public key"() {
+        given:
+        def adapter = adapterService.getAdapters(fintlabsOrganisation.getName()).stream().findAny().get()
 
+        when:
+        def dbAdapter = adapterDBRepository.findById(LdapNameBuilder.newInstance(adapter.getDn()).build())
+
+        then:
+        dbAdapter.isPresent()
+        dbAdapter.get().getPassword()
+        dbAdapter.get().getClientSecret()
+        dbAdapter.get().getPublicKey()
+    }
+
+    def "Get adapters should return all adapters for the organisation"() {
+        when:
+        def adapters = adapterService.getAdapters(fintlabsOrganisation.getName())
+
+        then:
+        adapters.size() == 4
+    }
+
+    def "Get adapter by name should return the adapter with the specified name"() {
+        given:
+        def adapter = adapterService.getAdapters(fintlabsOrganisation.getName()).stream().findAny().get()
+
+        when:
+        def adapterByName = adapterService.getAdapterByName(adapter.getName(), fintlabsOrganisation)
+
+        then:
+        adapterByName.isPresent()
+        adapterByName.get().getName() == adapter.getName()
+    }
+
+    def "Get client secret should return the client secret"() {
+        when:
+        def secret = adapterService.getClientSecret(adapterService.getAdapters(fintlabsOrganisation.getName()).stream().findAny().get())
+
+        then:
+        secret
+    }
+
+    def "When update adapter both ldap and db version should still be equal"() {
+        given:
+        def adapter = adapterService.getAdapterByDn(adapterService.getAdapters(fintlabsOrganisation.getName()).stream().findAny().get().getDn()).get()
+        adapter.setNote("test")
+
+        when:
+        adapterService.updateAdapter(adapter)
+        def ldap = ldapService.getEntry(adapter.getDn(), Adapter.class)
+        def db = adapterDBRepository.findById(LdapNameBuilder.newInstance(adapter.getDn()).build()).get()
+
+        then:
+        ldap.getNote() == db.getNote()
+    }
+
+    def "When updating adapter the password should not change"() {
+        given:
+        def adapter = adapterService.getAdapterByDn(adapterService.getAdapters(fintlabsOrganisation.getName()).stream().findAny().get().getDn()).get()
+
+        when:
+        def updateAdapter = adapterService.updateAdapter(adapter).get()
+
+        then:
+        adapter.getPassword() == updateAdapter.getPassword()
+    }
+
+    def "When reset the password should change"() {
+        given:
+        def adapter = adapterService.getAdapterByDn(adapterService.getAdapters(fintlabsOrganisation.getName()).stream().findAny().get().getDn()).get()
+        def oldPassword = adapter.getPassword()
+
+        when:
+        adapterService.resetAndEncryptPassword(adapter, adapter.getPublicKey())
+        def newPassword = adapterService.getAdapterByDn(adapter.getDn()).get().getPassword()
+
+        then:
+        oldPassword != newPassword
+    }
+
+    def "When deleting a client it should be removed from both ldap and db"() {
+        given:
+        def adapter = adapterService.getAdapterByDn(adapterService.getAdapters(fintlabsOrganisation.getName()).stream().findAny().get().getDn()).get()
+
+        when:
+        adapterService.deleteAdapter(adapter)
+        def ldap = ldapService.getEntry(adapter.getDn(), Adapter.class)
+        def db = adapterDBRepository.findById(LdapNameBuilder.newInstance(adapter.getDn()).build())
+
+        then:
+        ldap == null
+        db.isEmpty()
+    }
 }

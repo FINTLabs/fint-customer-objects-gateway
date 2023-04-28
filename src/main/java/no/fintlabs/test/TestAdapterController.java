@@ -45,7 +45,7 @@ public class TestAdapterController {
 
     }
 
-    @GetMapping
+    @GetMapping("{dn}")
     public ResponseEntity<AdapterEvent> generateGetAdapterEvent(@PathVariable String dn) {
 
         Adapter adapter = new Adapter();

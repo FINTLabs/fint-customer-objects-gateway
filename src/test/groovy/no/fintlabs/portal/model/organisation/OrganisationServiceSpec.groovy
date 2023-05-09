@@ -3,6 +3,7 @@ package no.fintlabs.portal.model.organisation
 import no.fintlabs.portal.ldap.Container
 import no.fintlabs.portal.ldap.LdapService
 import no.fintlabs.portal.model.adapter.Adapter
+import no.fintlabs.portal.model.adapter.AdapterDBRepository
 import no.fintlabs.portal.model.adapter.AdapterFactory
 import no.fintlabs.portal.model.adapter.AdapterService
 import no.fintlabs.portal.model.asset.Asset
@@ -35,25 +36,28 @@ class OrganisationServiceSpec extends Specification {
     private oauthService
     private componentService
     private assetService
-    private db
+    private clientDb
+    private adapterDb
 
     def setup() {
         def organisationBase = "ou=org,o=fint"
         def componentBase = "ou=comp,o=fint"
         def clientObjectService = new ClientFactory(organisationBase)
-        def adapterObjectService = new AdapterFactory(new SecretService(), organisationBase)
+        def adapterObjectService = new AdapterFactory(organisationBase)
 
         ldapService = Mock(LdapService)
         oauthService = Mock(NamOAuthClientService)
-        db = Mock(ClientDBRepository)
+        clientDb = Mock(ClientDBRepository)
+        adapterDb = Mock(AdapterDBRepository)
         assetService = new AssetService(ldapService: ldapService)
         contactService = Mock(ContactService)
         adapterService = new AdapterService(
                 adapterObjectService,
                 ldapService,
-                oauthService,
                 assetService,
-                new SecretService()
+                oauthService,
+                new SecretService(),
+                adapterDb
 
         )
         clientService = new ClientService(
@@ -62,7 +66,7 @@ class OrganisationServiceSpec extends Specification {
                 assetService,
                 oauthService,
                 new SecretService(),
-                 db
+                clientDb
         )
         organisationObjectService = new OrganisationObjectService(organisationBase: organisationBase, ldapService: ldapService)
         componentService = new ComponentService(
@@ -144,10 +148,11 @@ class OrganisationServiceSpec extends Specification {
         3 * ldapService.deleteEntry(_ as Container)
         //4 * oauthService.getOAuthClient(_ as String) >> ObjectFactory.newOAuthClient()
         3 * ldapService.getAll(_ as String, _ as Class) >>
-                Arrays.asList(ObjectFactory.newAdapter(), ObjectFactory.newAdapter()) >>
+                Arrays.asList(ObjectFactory.newAdapterWithDn(), ObjectFactory.newAdapterWithDn()) >>
                 Arrays.asList(ObjectFactory.newClientWithDn(), ObjectFactory.newClientWithDn()) >>
                 Arrays.asList(ObjectFactory.newAsset(), ObjectFactory.newAsset())
-        db.findById(_ as Name) >> Optional.empty()
+        clientDb.findById(_ as Name) >> Optional.empty()
+        adapterDb.findById(_ as Name) >> Optional.empty()
     }
 
 

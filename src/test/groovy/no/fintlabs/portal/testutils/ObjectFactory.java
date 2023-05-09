@@ -21,6 +21,17 @@ public enum ObjectFactory {
         return component;
     }
 
+    public static Adapter newAdapterWithDn() {
+        Adapter adapter = new Adapter();
+        adapter.setDn("cn=name");
+        adapter.setName("TestAdapter");
+        adapter.setNote("Test adapter for test organisation");
+        adapter.setShortDescription("Test Adapter");
+        adapter.setClientId("123");
+        adapter.setPublicKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx+1mDlIElhba0nN0wY7KWkctVsje+TYaycLZDoqW8sBBLLfU7icmRZtCtUnS1HptBKqUVYY94WKPfWEwCqP9EcWZr0wQ7iX4dBN/RYNsLwOknT520UkjliuY3ZIelsE0o8k/bcW2oqzHDrvtIVGfmUz8pS5+laIYN3EwyFKI/oJkIv2VPtD0XYorquckas/mMzk387kfNJIOn5o1Riuyd49NJeI0XJpgqBmPfHUsCcmmzucvXcK4q32RasE9o7l6MiFEhcK/evgBBONCFTobaVuo4Gu90+Y+laStKRRSMQNDqIYS+zo8id2TOSkEbG0pmZuEM5aSovLxkKjGNEN65wIDAQAB");
+        return adapter;
+    }
+
     public static Adapter newAdapter() {
         Adapter adapter = new Adapter();
         adapter.setName(UUID.randomUUID().toString());

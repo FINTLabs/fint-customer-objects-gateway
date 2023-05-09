@@ -78,8 +78,8 @@ class AdapterServiceSpec extends Specification {
 
         ldapAdapter.getDn() == dbAdapter.get().getDn()
         ldapAdapter.getName() == dbAdapter.get().getName()
-        ldapAdapter.getAsset() == dbAdapter.get().getAsset()
-        ldapAdapter.getAssetId() == dbAdapter.get().getAssetId()
+        ldapAdapter.getAssets() == dbAdapter.get().getAssets()
+        ldapAdapter.getAssetIds() == dbAdapter.get().getAssetIds()
         ldapAdapter.getClientId() == dbAdapter.get().getClientId()
         ldapAdapter.getNote() == dbAdapter.get().getNote()
         ldapAdapter.getShortDescription() == dbAdapter.get().getShortDescription()

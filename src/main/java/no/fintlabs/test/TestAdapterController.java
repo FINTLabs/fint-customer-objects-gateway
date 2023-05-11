@@ -2,14 +2,11 @@ package no.fintlabs.test;
 
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.portal.model.adapter.Adapter;
+import no.fintlabs.portal.model.adapter.AdapterDBRepository;
 import no.fintlabs.portal.model.adapter.AdapterEvent;
-import no.fintlabs.portal.model.adapter.AdapterService;
-import no.fintlabs.portal.model.client.Client;
-import no.fintlabs.portal.model.client.ClientEvent;
-import no.fintlabs.portal.model.client.ClientService;
 import no.fintlabs.portal.utilities.SecretService;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +15,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.security.*;
 import java.util.Base64;
+import java.util.Collection;
+import java.util.Optional;
 
 @ConditionalOnProperty(prefix = "fint.customer-object-gateway", name = "mode", havingValue = "test")
 @RestController
@@ -28,11 +27,15 @@ public class TestAdapterController {
     private final PrivateKey privateKey;
     private final String publicKey;
 
-    private final AdapterService adapterService;
 
-    public TestAdapterController(SecretService secretService, AdapterService adapterService) throws NoSuchAlgorithmException {
+    private final AdapterDBRepository adapterDBRepository;
+
+    private final AdapterEventRequestProducerService requestProducerService;
+
+    public TestAdapterController(SecretService secretService, AdapterDBRepository adapterDBRepository, AdapterEventRequestProducerService requestProducerService) throws NoSuchAlgorithmException {
         this.secretService = secretService;
-        this.adapterService = adapterService;
+        this.adapterDBRepository = adapterDBRepository;
+        this.requestProducerService = requestProducerService;
 
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         generator.initialize(2048);
@@ -42,61 +45,104 @@ public class TestAdapterController {
 
     }
 
-    @GetMapping
-    public ResponseEntity<AdapterEvent> generateGetClientEvent() {
-        Adapter adapter = adapterService.getAdapters("fintlabs_no").stream().findAny().orElseThrow();
+    @GetMapping("{dn}")
+    public ResponseEntity<AdapterEvent> generateGetAdapterEvent(@PathVariable String dn) {
+
+        Adapter adapter = new Adapter();
+        adapter.setDn(dn);
         adapter.setPublicKey(publicKey);
-        // These properties are set to null so that we only get the dn and public key in response. This is the only
-        // properties we need for a read, but we can have them all if we like.
-        adapter.setClientId(null);
-        adapter.setShortDescription(null);
-        adapter.setNote(null);
-        adapter.setName(null);
 
-        AdapterEvent adapterEvent = new AdapterEvent(adapter, "fintlabs.no", FintCustomerObjectEvent.Operation.READ);
+        return requestProducerService
+                .get(new AdapterEvent(adapter, "fintlabs.no", FintCustomerObjectEvent.Operation.READ))
+                .map(ae -> {
+                    if (ae.hasError()) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ae);
+                    }
+                    return ResponseEntity.ok(ae);
+                })
+                .orElse(ResponseEntity.internalServerError().build());
 
-        return ResponseEntity.ok(adapterEvent);
     }
 
     @PostMapping()
-    public ResponseEntity<AdapterEvent> generateCreateClientEvent() {
-        Adapter adapter = new Adapter();
-        adapter.setName("test-" + RandomStringUtils.randomAlphabetic(5));
-        adapter.setShortDescription("Test");
-        adapter.setPublicKey(publicKey);
+    public ResponseEntity<AdapterEvent> generateCreateAdapterEvent(@RequestBody AdapterEvent adapterEvent) {
+        adapterEvent.setOperation(FintCustomerObjectEvent.Operation.CREATE);
+        adapterEvent.getObject().setPublicKey(publicKey);
+        Optional<AdapterEvent> adapterEventResponse = requestProducerService.get(adapterEvent);
 
-        AdapterEvent clientEvent = new AdapterEvent(adapter, "fintlabs.no", FintCustomerObjectEvent.Operation.CREATE);
-
-        return ResponseEntity.ok(clientEvent);
+        return adapterEventResponse
+                .map(ae -> {
+                    if (ae.hasError()) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(ae);
+                    }
+                    return ResponseEntity.ok(ae);
+                })
+                .orElse(ResponseEntity.internalServerError().build());
     }
 
     @PutMapping()
-    public ResponseEntity<AdapterEvent> generateUpdateClientEvent() {
-        Adapter adapter = adapterService.getAdapters("fintlabs_no").stream().findAny().orElseThrow();
-        adapter.setPublicKey(publicKey);
+    public ResponseEntity<AdapterEvent> generateUpdateAdapterEvent(@RequestBody AdapterEvent adapterEvent) {
 
-        AdapterEvent adapterEvent = new AdapterEvent(adapter, "fintlabs.no", FintCustomerObjectEvent.Operation.UPDATE);
-
-        return ResponseEntity.ok(adapterEvent);
+        adapterEvent.setOperation(FintCustomerObjectEvent.Operation.UPDATE);
+        adapterEvent.getObject().setPublicKey(publicKey);
+        return requestProducerService
+                .get(adapterEvent)
+                .map(ae -> {
+                    if (ae.hasError()) {
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ae);
+                    }
+                    return ResponseEntity.ok(ae);
+                })
+                .orElse(ResponseEntity.internalServerError().build());
     }
 
     @DeleteMapping()
-    public ResponseEntity<AdapterEvent> generateDeleteClientEvent() {
-        Adapter adapter = adapterService.getAdapters("fintlabs_no").stream().findAny().orElseThrow();
-        adapter.setPublicKey(publicKey);
+    public ResponseEntity<AdapterEvent> generateDeleteAdapterEvent(@RequestBody AdapterEvent adapterEvent) {
 
-        AdapterEvent adapterEvent = new AdapterEvent(adapter, "fintlabs.no", FintCustomerObjectEvent.Operation.DELETE);
+        adapterEvent.setOperation(FintCustomerObjectEvent.Operation.DELETE);
+        return requestProducerService
+                .get(adapterEvent)
+                .map(ae -> {
+                    if (ae.hasError()) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(ae);
+                    }
+                    return ResponseEntity.ok(ae);
+                })
+                .orElse(ResponseEntity.internalServerError().build());
+    }
 
-        return ResponseEntity.ok(adapterEvent);
+    @PostMapping("password/reset")
+    public ResponseEntity<AdapterEvent> resetAdapterPasswordAdapterEvent(@RequestBody AdapterEvent adapterEvent) {
+
+        adapterEvent.setOperation(FintCustomerObjectEvent.Operation.RESET_PASSWORD);
+        return requestProducerService
+                .get(adapterEvent)
+                .map(ae -> {
+                    if (ae.hasError()) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(ae);
+                    }
+                    return ResponseEntity.ok(ae);
+                })
+                .orElse(ResponseEntity.internalServerError().build());
     }
 
     @PostMapping("decrypt")
-    public ResponseEntity<Adapter> decryptClient(@RequestBody Adapter adapter) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+    public ResponseEntity<Adapter> decryptAdapter(@RequestBody AdapterEvent adapterEvent) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 
-        adapter.setClientSecret(secretService.decrypt(privateKey, adapter.getClientSecret()));
-        adapter.setPassword(secretService.decrypt(privateKey, adapter.getPassword()));
+        adapterEvent.getObject().setClientSecret(secretService.decrypt(privateKey, adapterEvent.getObject().getClientSecret()));
+        adapterEvent.getObject().setPassword(secretService.decrypt(privateKey, adapterEvent.getObject().getPassword()));
 
-        return ResponseEntity.ok(adapter);
-
+        return ResponseEntity.ok(adapterEvent.getObject());
     }
+
+    @GetMapping("cache-size")
+    public ResponseEntity<Long> cacheSize() {
+        return ResponseEntity.ok(adapterDBRepository.count());
+    }
+
+    @GetMapping("cache")
+    public ResponseEntity<Collection<Adapter>> cache() {
+        return ResponseEntity.ok(adapterDBRepository.findAll());
+    }
+
 }

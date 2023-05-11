@@ -8,7 +8,11 @@ import no.fintlabs.portal.model.FintCustomerObjectEvent;
 @AllArgsConstructor
 public class AdapterEvent extends FintCustomerObjectEvent<Adapter> {
 
+    public AdapterEvent(Adapter object, String orgId, Operation operation, String errorMessage) {
+        super(object, orgId, operation, errorMessage);
+    }
+
     public AdapterEvent(Adapter object, String orgId, Operation operation) {
-        super(object, orgId, operation, "");
+        super(object, orgId, operation, null);
     }
 }

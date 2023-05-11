@@ -9,9 +9,7 @@ import no.fintlabs.kafka.requestreply.topic.RequestTopicService;
 import no.fintlabs.portal.ldap.BasicLdapEntry;
 import no.fintlabs.portal.model.organisation.OrganisationService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.listener.CommonLoggingErrorHandler;
-import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.ParameterizedType;
@@ -28,9 +26,14 @@ public abstract class FintCustomerObjectRequestBroker<E extends FintCustomerObje
     private Map<String, FintCustomerObjectHandler<T, E>> actionsHandlerMap;
     private final Collection<FintCustomerObjectHandler<T, E>> handlers;
 
-    public FintCustomerObjectRequestBroker(OrganisationService organisationService, Collection<FintCustomerObjectHandler<T, E>> handlers) {
+    public FintCustomerObjectRequestBroker(OrganisationService organisationService,
+                                           Collection<FintCustomerObjectHandler<T, E>> handlers,
+                                           RequestConsumerFactoryService requestConsumerFactoryService,
+                                           RequestTopicService requestTopicService) {
         this.organisationService = organisationService;
         this.handlers = handlers;
+        createCustomerObjectRequestConsumer(requestConsumerFactoryService, requestTopicService);
+
     }
 
     @SuppressWarnings("unchecked")
@@ -95,8 +98,7 @@ public abstract class FintCustomerObjectRequestBroker<E extends FintCustomerObje
 
     }
 
-    @Bean
-    public ConcurrentMessageListenerContainer<String, E> customerObjectRequestConsumer(
+    private void createCustomerObjectRequestConsumer(
             RequestConsumerFactoryService requestConsumerFactoryService,
             RequestTopicService requestTopicService) {
 
@@ -108,7 +110,7 @@ public abstract class FintCustomerObjectRequestBroker<E extends FintCustomerObje
         requestTopicService
                 .ensureTopic(requestTopicNameParameters, 0, TopicCleanupPolicyParameters.builder().build());
 
-        return requestConsumerFactoryService.createFactory(
+        requestConsumerFactoryService.createFactory(
                 getEventTypeClass(),
                 getEventTypeClass(),
                 this::processEvent,

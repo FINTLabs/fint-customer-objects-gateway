@@ -1,14 +1,15 @@
 package no.fintlabs.portal.model.adapter
 
 import no.fintlabs.portal.model.organisation.Organisation
-import no.fintlabs.portal.utilities.SecretService
 import spock.lang.Specification
 
 class AdapterFactorySpec extends Specification {
-    def adapterFactory
+    private AdapterFactory adapterFactory
+    private Organisation organisation
 
-    def setup() {
-        adapterFactory = new AdapterFactory(new SecretService(), "ou=comp,o=fint")
+    void setup() {
+        adapterFactory = new AdapterFactory("ou=comp,o=fint")
+        organisation = new Organisation(primaryAssetId: "test.no", name: "test_no")
     }
 
     def "Get Adapter Base"() {
@@ -22,7 +23,7 @@ class AdapterFactorySpec extends Specification {
 
     def "Get Adapter Dn"() {
         when:
-        def dn = adapterFactory.getAdapterDn("adapterUuid", "orgUuid")
+        def dn = adapterFactory.getAdapterDn("adapterUuid", organisation)
 
         then:
         dn != null

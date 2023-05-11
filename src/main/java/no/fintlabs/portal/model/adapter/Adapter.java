@@ -1,11 +1,10 @@
 package no.fintlabs.portal.model.adapter;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import no.fintlabs.portal.ldap.BasicLdapEntry;
+import no.fintlabs.portal.ldap.BasicLdapEntryWithSecrets;
 import org.springframework.ldap.odm.annotations.Attribute;
 import org.springframework.ldap.odm.annotations.Entry;
 import org.springframework.ldap.odm.annotations.Id;
@@ -13,76 +12,92 @@ import org.springframework.ldap.odm.annotations.Transient;
 import org.springframework.ldap.support.LdapNameBuilder;
 
 import javax.naming.Name;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel
-@ToString(exclude = {"password"})
+@AllArgsConstructor
+@ToString(exclude = {"password", "clientSecret"})
 @Entry(objectClasses = {"fintAdapter", "inetOrgPerson", "organizationalPerson", "person", "top"})
-public final class Adapter implements BasicLdapEntry {
+@Entity
+@Table(name = "adapter")
+public final class Adapter implements BasicLdapEntryWithSecrets {
 
-    @ApiModelProperty(value = "DN of the adapter. This is automatically set.")
     @Id
+    @javax.persistence.Id
     private Name dn;
 
-    @ApiModelProperty(value = "Username for the adapter. This is automatically set.")
+    @Getter
+    @Setter
     @Attribute(name = "cn")
     private String name;
 
-    @ApiModelProperty(value = "Short description of the adapter")
+    @Getter
+    @Setter
+    @Attribute(name = "fintAdapterManaged")
+    private boolean isManaged;
+
+    @Getter
+    @Setter
     @Attribute(name = "sn")
     private String shortDescription;
 
-    @ApiModelProperty(value = "A note of the adapter.")
+    @Getter
+    @Setter
+    @Attribute(name = "fintAdapterAssets")
+    @ElementCollection
+    private List<String> assets;
+
+    @Getter
+    @Setter
+    @Attribute(name = "fintAdapterAssetIds")
+    @ElementCollection
+    private List<String> assetIds;
+
+    @Getter
+    @Setter
     @Attribute(name = "description")
+    @Column(length = 4096)
     private String note;
 
-    @Attribute(name = "userPassword")
+    @Getter
+    @Setter
+    @Transient
+    @Column(length = 512)
     private String password;
 
+    @Getter
+    @Setter
     @Transient
+    @Column(length = 512)
     private String clientSecret;
 
     @Transient
     @Getter
     @Setter
+    @Column(length = 512)
     private String publicKey;
 
-    @ApiModelProperty(value = "OAuth client id")
+    @Getter
+    @Setter
     @Attribute(name = "fintOAuthClientId")
     private String clientId;
 
+    @Getter
     @Attribute(name = "fintAdapterComponents")
+    @ElementCollection
     private List<String> components;
 
-    @Attribute(name = "fintAdapterAssets")
-    private List<String> assets;
-
-
-    @Attribute(name = "fintAdapterAssetIds")
-    private List<String> assetIds;
-
+    @Getter
+    @Attribute(name = "fintAdapterAccessPackages")
+    @ElementCollection
+    private List<String> accessPackages;
 
     public Adapter() {
         components = new ArrayList<>();
         assets = new ArrayList<>();
         assetIds = new ArrayList<>();
     }
-
-    public List<String> getAssetIds() {
-        return assetIds;
-    }
-
-    public void addAssetId(String assetId) {
-        if (assetIds.stream().noneMatch(assetId::equalsIgnoreCase)) {
-            assetIds.add(assetId);
-        }
-    }
-
-    public void removeAssetId(String assetId) {
-        assetIds.removeIf(asset -> asset.equalsIgnoreCase(assetId));
-    }
-
 
     public void addComponent(String componentDn) {
         if (components.stream().noneMatch(componentDn::equalsIgnoreCase)) {
@@ -92,6 +107,12 @@ public final class Adapter implements BasicLdapEntry {
 
     public void removeComponent(String componentDn) {
         components.removeIf(component -> component.equalsIgnoreCase(componentDn));
+    }
+
+    public void addAssetId(String assetId) {
+        if (assetIds.stream().noneMatch(assetId::equalsIgnoreCase)) {
+            assetIds.add(assetId);
+        }
     }
 
     public void addAsset(String assetId) {
@@ -104,51 +125,11 @@ public final class Adapter implements BasicLdapEntry {
         assets.removeIf(asset -> asset.equalsIgnoreCase(assetId));
     }
 
-    public List<String> getComponents() {
-        return components;
+    public void removeAssetId(String assetId) {
+        assetIds.removeIf(asset -> asset.equalsIgnoreCase(assetId));
     }
 
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getShortDescription() {
-        return shortDescription;
-    }
-
-    public void setShortDescription(String shortDescription) {
-        this.shortDescription = shortDescription;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setClientSecret(String clientSecret) {
-        this.clientSecret = clientSecret;
-    }
-
-    public String getClientSecret() {
-        return clientSecret;
-    }
-
+    @Override
     public String getDn() {
         if (dn != null) {
             return dn.toString();
@@ -167,16 +148,10 @@ public final class Adapter implements BasicLdapEntry {
         this.dn = dn;
     }
 
-    public String getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
-    public List<String> getAssets() {
-        return assets;
+    @Override
+    public void clearSecrets() {
+        password = null;
+        clientSecret = null;
     }
 
 }

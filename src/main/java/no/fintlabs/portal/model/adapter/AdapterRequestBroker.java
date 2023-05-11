@@ -1,4 +1,4 @@
-package no.fintlabs.portal.model.client;
+package no.fintlabs.portal.model.adapter;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.kafka.requestreply.RequestConsumerFactoryService;
@@ -12,10 +12,9 @@ import java.util.Collection;
 
 @Slf4j
 @Component
-public class ClientRequestBroker extends FintCustomerObjectRequestBroker<ClientEvent, Client> {
-
-    public ClientRequestBroker(OrganisationService organisationService, Collection<FintCustomerObjectHandler<Client, ClientEvent>> fintCustomerObjectHandlers, RequestConsumerFactoryService requestConsumerFactoryService,
-                               RequestTopicService requestTopicService) {
+public class AdapterRequestBroker extends FintCustomerObjectRequestBroker<AdapterEvent, Adapter> {
+    public AdapterRequestBroker(OrganisationService organisationService, Collection<FintCustomerObjectHandler<Adapter, AdapterEvent>> fintCustomerObjectHandlers,RequestConsumerFactoryService requestConsumerFactoryService,
+                                RequestTopicService requestTopicService) {
         super(organisationService, fintCustomerObjectHandlers, requestConsumerFactoryService, requestTopicService);
     }
 }

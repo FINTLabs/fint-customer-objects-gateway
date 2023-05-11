@@ -37,13 +37,13 @@ public abstract class FintCustomerObjectRequestBroker<E extends FintCustomerObje
     }
 
     @SuppressWarnings("unchecked")
-    protected Class<E> getEventTypeClass() {
+    private Class<E> getEventTypeClass() {
         return (Class<E>) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
     @SuppressWarnings("unchecked")
-    protected Class<T> getCustomerObjectTypeClass() {
+    private Class<T> getCustomerObjectTypeClass() {
         return (Class<T>) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[1];
     }
@@ -63,7 +63,7 @@ public abstract class FintCustomerObjectRequestBroker<E extends FintCustomerObje
 
     }
 
-    protected ReplyProducerRecord<E> processEvent(ConsumerRecord<String, E> consumerRecord) {
+    private ReplyProducerRecord<E> processEvent(ConsumerRecord<String, E> consumerRecord) {
 
         log.info("{} event received for : {}", consumerRecord.value().getOperationWithType(), consumerRecord.value().getOrganisationObjectName());
         E event = consumerRecord.value();

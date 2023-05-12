@@ -6,9 +6,11 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
   datasource:
-    url: jdbc:postgresql://localhost:5432/fint_customer_objects_gateway
+    url: jdbc:postgresql://localhost:5432/flais
     username: postgres
     password: postgres
+    hikari:
+      schema: fintlabs_no
   jpa:
     properties:
       hibernate:
@@ -18,4 +20,4 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         enable_lazy_load_no_trans: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate

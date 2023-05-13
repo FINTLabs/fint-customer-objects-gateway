@@ -5,8 +5,8 @@ resources:
 patches:
   - patch: |-
       - op: replace
-        path: "/spec/itemPath"
+        path: "/spec/onePassword/itemPath"
         value: "vaults/aks-alpha-vault/items/fint-customer-objects-gateway"
     target:
-      kind: OnePasswordItem
+      kind: Application
       name: fint-customer-objects-gateway

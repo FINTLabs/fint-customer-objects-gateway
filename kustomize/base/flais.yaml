@@ -1,0 +1,14 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: Application
+metadata:
+  name: fint-customer-objects-gateway
+spec:
+  database:
+    database: flais
+  kafka:
+    acls:
+      - permission: admin
+        topic: 'flais-io.fint-customer-objects.*'
+  onePassword:
+    itemPath: dummy
+

@@ -1,6 +1,0 @@
-apiVersion: "fintlabs.no/v1alpha1"
-kind: PGUser
-metadata:
-  name: fint-customer-objects-gateway-pg
-spec:
-  database: flais

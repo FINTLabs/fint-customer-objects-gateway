@@ -7,9 +7,17 @@ spec:
   database:
     database: flais
   kafka:
+    enabled: true
     acls:
       - permission: admin
         topic: 'flais-io.fint-customer-objects.*'
   onePassword:
     itemPath: dummy
+  resources:
+    limits:
+      memory: 1Gi
+      cpu: 500m
+    requests:
+      memory: 512Mi
+      cpu: 250m
 

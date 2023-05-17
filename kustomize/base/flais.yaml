@@ -3,6 +3,7 @@ kind: Application
 metadata:
   name: fint-customer-objects-gateway
 spec:
+  orgId: flais.io
   image: "ghcr.io/fintlabs/fint-customer-objects-gateway:sha-0000000"
   database:
     database: flais

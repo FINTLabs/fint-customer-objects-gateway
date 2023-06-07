@@ -88,10 +88,10 @@ public final class Adapter implements BasicLdapEntryWithSecrets {
     @ElementCollection
     private List<String> components;
 
-    @Getter
-    @Attribute(name = "fintAdapterAccessPackages")
-    @ElementCollection
-    private List<String> accessPackages;
+//    @Getter
+//    @Attribute(name = "fintAdapterAccessPackages")
+//    @ElementCollection
+//    private List<String> accessPackages;
 
     public Adapter() {
         components = new ArrayList<>();

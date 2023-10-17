@@ -23,19 +23,6 @@ fint:
       clientId: "dummy"
       clientSecret: "dummy"
 
-#fint.ldap.access.template-base=ou\=access,o\=fint;
-#  fint.ldap.component-base=ou\=components,o\=fint
-  # fint.ldap.contact-base=ou\=contacts,o\=fint
-  # fint.ldap.organisation-base=ou\=organisations,o\=fint
-  # fint.ldap.password=BiL\6]\=Lh~#
-  # fint.ldap.url=ldap://localhost:3890
-  # fint.ldap.user=cn\=fint-portal-user,ou\=users,ou\=fintlabs,o\=fint
-  # fint.nam.oauth.clientId=65614873-80ca-49ba-a35f-c37afeed9d8b
-  # fint.nam.oauth.clientSecret=Z8RrEFrgRWj7u6o2GYZNba6T1Vm5eJqk-D4wRKm0uzKGVXmtL_NEm1gSiz1lpW-qKih5uaXxK92ZUjujBRXGHw
-  # fint.nam.oauth.idp-hostname=idp.test.felleskomponent.no
-  # fint.nam.oauth.password=BiL\6]\=Lh~
-  # fint.nam.oauth.username=fint-portal-user
-
 spring:
   ldap:
     embedded:

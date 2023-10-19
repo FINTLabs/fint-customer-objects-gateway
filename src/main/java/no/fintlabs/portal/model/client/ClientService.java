@@ -48,8 +48,12 @@ public class ClientService
         this.db = db;
     }
 
+    private int count = 0;
+
     public Optional<Client> addClient(Client client, Organisation organisation) {
         clientFactory.setupClient(client, organisation);
+
+        log.debug("Add client: ClientId: {}, ClientName: {}, Dn: {}", client.getClientId(), client.getName(), client.getDn());
 
         OAuthClient oAuthClient = namOAuthClientService.addOAuthClient(
                 String.format("c_%s", client.getName()
@@ -69,8 +73,18 @@ public class ClientService
                 .map(createdClient -> {
                     createdClient.setPublicKey(client.getPublicKey());
                     resetAndEncryptPassword(createdClient, createdClient.getPublicKey());
-                    encryptClientSecret(createdClient, createdClient.getPublicKey());
+
+                    try {
+                        encryptClientSecret(createdClient, createdClient.getPublicKey());
+                    } catch (Exception e){
+                        log.error("Error in encrypt client secret ", e);
+                        createdClient.setClientSecret(null);
+                    }
+
                     db.save(createdClient);
+
+                    // TODO: Simulate error
+                    if (count++ < 10) createdClient.setClientSecret(null);
 
                     return createdClient;
                 });
@@ -127,6 +141,12 @@ public class ClientService
     }
 
     public Optional<Client> updateClient(Client client) {
+// TODO tilsvarende for password
+        if (org.apache.commons.lang3.StringUtils.isEmpty(client.getClientSecret()) && org.apache.commons.lang3.StringUtils.isNotEmpty(client.getPublicKey())) {
+            encryptClientSecret(client, client.getPublicKey());
+            log.info("Get clientSecret from nam because it's empty");
+        }
+
         if (ldapService.updateEntry(client)) {
             return getClientByDnFromLdap(client.getDn())
                     .map(updatedClient -> db.findById(LdapNameBuilder.newInstance(Objects.requireNonNull(updatedClient.getDn())).build())

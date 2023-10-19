@@ -89,11 +89,22 @@ public class NamOAuthClientService {
 
     public OAuthClient getOAuthClient(String clientId) {
         log.info("Fetching client {}...", clientId);
-        try {
-            return restTemplate.getForObject(NamOAuthConstants.CLIENT_URL_TEMPLATE, OAuthClient.class, idpHostname, clientId);
-        } catch (Exception e) {
-            log.error("Unable to get client {}", clientId, e);
-            throw e;
+        for (int i = 1; true; i++) {
+            try {
+                return restTemplate.getForObject(NamOAuthConstants.CLIENT_URL_TEMPLATE, OAuthClient.class, idpHostname, clientId);
+            } catch (Exception e) {
+                log.error("Unable to get client {}, this was iteration number {}", clientId, i);
+
+                if (i == 10) {
+                    log.info("Maxed retries");
+                    throw e;
+                }
+                try {
+                    Thread.sleep(i * 350);
+                } catch (InterruptedException ex) {
+                    log.debug("should not happen 🤬");
+                }
+            }
         }
     }
 }

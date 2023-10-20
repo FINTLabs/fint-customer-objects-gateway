@@ -48,8 +48,6 @@ public class ClientService
         this.db = db;
     }
 
-    private int count = 0;
-
     public Optional<Client> addClient(Client client, Organisation organisation) {
         clientFactory.setupClient(client, organisation);
 
@@ -82,9 +80,6 @@ public class ClientService
                     }
 
                     db.save(createdClient);
-
-                    // TODO: Simulate error
-                    if (count++ < 10) createdClient.setClientSecret(null);
 
                     return createdClient;
                 });
@@ -141,8 +136,7 @@ public class ClientService
     }
 
     public Optional<Client> updateClient(Client client) {
-// TODO tilsvarende for password
-        if (org.apache.commons.lang3.StringUtils.isEmpty(client.getClientSecret()) && org.apache.commons.lang3.StringUtils.isNotEmpty(client.getPublicKey())) {
+        if (!StringUtils.hasText(client.getClientSecret()) && StringUtils.hasText(client.getPublicKey())) {
             encryptClientSecret(client, client.getPublicKey());
             log.info("Get clientSecret from nam because it's empty");
         }

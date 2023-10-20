@@ -20,6 +20,8 @@ import java.util.Collections;
 @Slf4j
 public class NamOAuthClientService {
 
+    public static final int RETRY_ATTEMPTS = 10;
+    public static final int RETRY_SLEEP_MS = 350;
     @Autowired
     private ObjectMapper mapper;
     @Value("${fint.nam.oauth.username}")
@@ -96,12 +98,12 @@ public class NamOAuthClientService {
                 log.error("Unable to get client {}, this was iteration number {}", clientId, i);
                 log.error("Error: ", e);
 
-                if (i == 10) {
+                if (i == RETRY_ATTEMPTS) {
                     log.info("Failed to getOauthClient after max retry attempts. Giving up");
                     throw e;
                 }
                 try {
-                    Thread.sleep(i * 350);
+                    Thread.sleep(i * RETRY_SLEEP_MS);
                 } catch (InterruptedException ex) {
                     log.debug("Usually doesn't happen", e);
                 }

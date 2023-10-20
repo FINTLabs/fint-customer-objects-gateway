@@ -16,7 +16,7 @@ spring:
 
   profiles:
     include:
-      - local-staging
+      - db
 
 logging:
   level:

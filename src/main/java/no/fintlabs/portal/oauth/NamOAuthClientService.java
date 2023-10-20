@@ -102,12 +102,17 @@ public class NamOAuthClientService {
                     log.info("Failed to getOauthClient after max retry attempts. Giving up");
                     throw e;
                 }
-                try {
-                    Thread.sleep(i * RETRY_SLEEP_MS);
-                } catch (InterruptedException ex) {
-                    log.debug("Usually doesn't happen", e);
-                }
+
+                sleep(i);
             }
+        }
+    }
+
+    private void sleep(int i) {
+        try {
+            Thread.sleep(i * RETRY_SLEEP_MS);
+        } catch (InterruptedException ex) {
+            log.debug("Usually doesn't happen", ex);
         }
     }
 }

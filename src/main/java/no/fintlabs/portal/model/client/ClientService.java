@@ -136,9 +136,15 @@ public class ClientService
     }
 
     public Optional<Client> updateClient(Client client) {
+
+        if (!StringUtils.hasText(client.getPassword()) && StringUtils.hasText(client.getPublicKey())) {
+            resetAndEncryptPassword(client, client.getPublicKey());
+            log.warn("Get password because it's empty");
+        }
+
         if (!StringUtils.hasText(client.getClientSecret()) && StringUtils.hasText(client.getPublicKey())) {
             encryptClientSecret(client, client.getPublicKey());
-            log.info("Get clientSecret from nam because it's empty");
+            log.warn("Get clientSecret from nam because it's empty");
         }
 
         if (ldapService.updateEntry(client)) {

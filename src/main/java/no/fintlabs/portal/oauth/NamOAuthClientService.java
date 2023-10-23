@@ -95,11 +95,11 @@ public class NamOAuthClientService {
             try {
                 return restTemplate.getForObject(NamOAuthConstants.CLIENT_URL_TEMPLATE, OAuthClient.class, idpHostname, clientId);
             } catch (Exception e) {
-                log.error("Unable to get client {}, this was iteration number {}", clientId, i);
-                log.error("Error: ", e);
+                log.warn("Unable to get client {}, this was iteration number {}", clientId, i);
+                log.warn("Error, will retry: " + e.getMessage());
 
                 if (i == RETRY_ATTEMPTS) {
-                    log.info("Failed to getOauthClient after max retry attempts. Giving up");
+                    log.error("Failed to getOauthClient after max retry attempts. Giving up", e);
                     throw e;
                 }
 

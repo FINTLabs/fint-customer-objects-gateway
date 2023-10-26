@@ -84,16 +84,26 @@ public class AdapterService implements FintCustomerObjectWithSecretsService<Adap
 
     @Override
     public void encryptClientSecret(Adapter adapter, String publicKeyString) {
-        adapter.setClientSecret(secretService.encryptPassword(
-                namOAuthClientService.getOAuthClient(adapter.getClientId()).getClientSecret(),
-                publicKeyString
-        ));
+        try {
+            adapter.setClientSecret(secretService.encryptPassword(
+                    namOAuthClientService.getOAuthClient(adapter.getClientId()).getClientSecret(),
+                    publicKeyString
+            ));
+        } catch (Exception e) {
+            log.error("Error when encrypting clientSecret" , e);
+        }
+
         db.save(adapter);
     }
 
     @Override
     public void resetAndEncryptPassword(Adapter adapter, String privateKeyString) {
-        adapter.setPassword(secretService.encryptPassword(resetAdapterPassword(adapter), privateKeyString));
+        try {
+            adapter.setPassword(secretService.encryptPassword(resetAdapterPassword(adapter), privateKeyString));
+        } catch (Exception e) {
+            log.error("Error when encrypting password" , e);
+        }
+
         db.save(adapter);
     }
 
@@ -122,6 +132,17 @@ public class AdapterService implements FintCustomerObjectWithSecretsService<Adap
     }
 
     public Optional<Adapter> updateAdapter(Adapter adapter) {
+
+        if (!StringUtils.hasText(adapter.getPassword()) && StringUtils.hasText(adapter.getPublicKey())) {
+            resetAndEncryptPassword(adapter, adapter.getPublicKey());
+            log.warn("Get password because it's empty");
+        }
+
+        if (!StringUtils.hasText(adapter.getClientSecret()) && StringUtils.hasText(adapter.getPublicKey())) {
+            encryptClientSecret(adapter, adapter.getPublicKey());
+            log.warn("Get clientSecret from nam because it's empty");
+        }
+
         if (ldapService.updateEntry(adapter)) {
             return getAdapterByDnFromLdap(adapter.getDn())
                     .map(updatedAdapter -> db.findById(LdapNameBuilder.newInstance(Objects.requireNonNull(updatedAdapter.getDn())).build())

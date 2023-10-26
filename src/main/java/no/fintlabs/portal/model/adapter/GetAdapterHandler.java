@@ -27,7 +27,11 @@ public class GetAdapterHandler extends FintCustomerObjectWithSecretsHandler<Adap
 
     @Override
     public Adapter apply(ConsumerRecord<String, AdapterEvent> consumerRecord, Organisation organisation) {
-        return adapterService.getAdapterByDn(consumerRecord.value().getObject().getDn())
-                .orElseThrow(() -> new RuntimeException("Unable to find adapter: " + consumerRecord.value().getObject().getDn()));
+        String adapterDn = consumerRecord.value().getObject().getDn();
+        return adapterService.getAdapterByDn(adapterDn)
+                .orElseGet(() -> {
+                    log.warn("Unable to find adapter: {}", adapterDn);
+                    return null;
+                });
     }
 }

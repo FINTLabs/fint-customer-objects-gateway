@@ -9,6 +9,8 @@ import no.fintlabs.portal.model.organisation.Organisation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Slf4j
 @Component
 public class GetClientHandler extends FintCustomerObjectWithSecretsHandler<Client, ClientEvent, ClientService> {
@@ -28,7 +30,11 @@ public class GetClientHandler extends FintCustomerObjectWithSecretsHandler<Clien
 
     @Override
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
-        return clientService.getClientByDn(consumerRecord.value().getObject().getDn())
-                .orElseThrow(() -> new RuntimeException("Unable to find client: " + consumerRecord.value().getObject().getDn()));
+        String clientDn = consumerRecord.value().getObject().getDn();
+        return clientService.getClientByDn(clientDn)
+                .orElseGet(() -> {
+                    log.warn("Unable to find client: {}", clientDn);
+                    return null;
+                });
     }
 }

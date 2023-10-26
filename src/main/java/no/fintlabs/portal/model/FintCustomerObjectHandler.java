@@ -28,7 +28,7 @@ public abstract class FintCustomerObjectHandler<T extends BasicLdapEntry, E exte
         entityTopic = EntityTopicNameParameters
                 .builder()
                 .orgId("flais.io")       // Optional if set as application property
-                .domainContext("fint-service")  // Optional if set as application property
+                .domainContext("fint-customer-objects")  // Optional if set as application property
                 .resource(objectType.getSimpleName().toLowerCase())
                 .build();
     }

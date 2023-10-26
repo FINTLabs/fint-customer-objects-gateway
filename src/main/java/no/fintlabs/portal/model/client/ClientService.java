@@ -71,13 +71,7 @@ public class ClientService
                 .map(createdClient -> {
                     createdClient.setPublicKey(client.getPublicKey());
                     resetAndEncryptPassword(createdClient, createdClient.getPublicKey());
-
-                    try {
-                        encryptClientSecret(createdClient, createdClient.getPublicKey());
-                    } catch (Exception e){
-                        log.error("Error in encrypt client secret ", e);
-                        createdClient.setClientSecret(null);
-                    }
+                    encryptClientSecret(createdClient, createdClient.getPublicKey());
 
                     db.save(createdClient);
 
@@ -98,16 +92,27 @@ public class ClientService
 
     @Override
     public void encryptClientSecret(Client client, String publicKeyString) {
-        client.setClientSecret(secretService.encryptPassword(
-                namOAuthClientService.getOAuthClient(client.getClientId()).getClientSecret(),
-                publicKeyString
-        ));
+        try {
+            client.setClientSecret(secretService.encryptPassword(
+                    namOAuthClientService.getOAuthClient(client.getClientId()).getClientSecret(),
+                    publicKeyString
+            ));
+        } catch (Exception e) {
+            log.error("Error when encrypt clientSecret ", e);
+            client.setClientSecret(null);
+        }
+
         db.save(client);
     }
 
     @Override
     public void resetAndEncryptPassword(Client client, String privateKeyString) {
-        client.setPassword(secretService.encryptPassword(resetClientPassword(client), privateKeyString));
+        try {
+            client.setPassword(secretService.encryptPassword(resetClientPassword(client), privateKeyString));
+        } catch (Exception e) {
+            log.error("Error when encrypt clientSecret ", e);
+            client.setPassword(null);
+        }
         db.save(client);
     }
 

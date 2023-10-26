@@ -32,7 +32,7 @@ public class OrganisationEventHandler {
         organisationCreatedTopic = EventTopicNameParameters
                 .builder()
                 .orgId("flais.io")       // Optional if set as application property
-                .domainContext("fint-service")  // Optional if set as application property
+                .domainContext("fint-customer-objects")  // Optional if set as application property
                 .eventName("organisation-created")
                 .build();
 
@@ -45,7 +45,7 @@ public class OrganisationEventHandler {
         EventTopicNameParameters createOrganisationTopic = EventTopicNameParameters
                 .builder()
                 .orgId("flais.io")       // Optional if set as application property
-                .domainContext("fint-service")  // Optional if set as application property
+                .domainContext("fint-customer-objects")  // Optional if set as application property
                 .eventName("new-organisation")
                 .build();
         eventTopicService.ensureTopic(createOrganisationTopic, Duration.ofHours(48).toMillis());

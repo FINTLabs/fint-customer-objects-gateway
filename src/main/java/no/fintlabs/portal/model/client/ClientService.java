@@ -99,7 +99,6 @@ public class ClientService
             ));
         } catch (Exception e) {
             log.error("Error when encrypt clientSecret ", e);
-            client.setClientSecret(null);
         }
 
         db.save(client);
@@ -111,8 +110,8 @@ public class ClientService
             client.setPassword(secretService.encryptPassword(resetClientPassword(client), privateKeyString));
         } catch (Exception e) {
             log.error("Error when encrypt clientSecret ", e);
-            client.setPassword(null);
         }
+
         db.save(client);
     }
 
@@ -142,23 +141,15 @@ public class ClientService
 
     public Optional<Client> updateClient(Client client) {
 
-        if (!StringUtils.hasText(client.getPassword()) && StringUtils.hasText(client.getPublicKey())) {
-            resetAndEncryptPassword(client, client.getPublicKey());
-            log.warn("Get password because it's empty");
-        }
-
-        if (!StringUtils.hasText(client.getClientSecret()) && StringUtils.hasText(client.getPublicKey())) {
-            encryptClientSecret(client, client.getPublicKey());
-            log.warn("Get clientSecret from nam because it's empty");
-        }
-
         if (ldapService.updateEntry(client)) {
             return getClientByDnFromLdap(client.getDn())
                     .map(updatedClient -> db.findById(LdapNameBuilder.newInstance(Objects.requireNonNull(updatedClient.getDn())).build())
                             .map(clientFromDb -> {
+
                                 updatedClient.setClientSecret(clientFromDb.getClientSecret());
                                 updatedClient.setPassword(clientFromDb.getPassword());
-                                updatedClient.setPublicKey(clientFromDb.getPublicKey());
+                                updatedClient.setPublicKey(StringUtils.hasText(clientFromDb.getPublicKey()) ? clientFromDb.getPublicKey() : client.getPublicKey());
+                                checkPasswordAndClientSecret((updatedClient));
                                 db.save(updatedClient);
 
                                 return updatedClient;
@@ -166,6 +157,23 @@ public class ClientService
                             .orElseGet(() -> db.save(updatedClient)));
         }
         return Optional.empty();
+    }
+
+    public void checkPasswordAndClientSecret(Client client) {
+
+        if (!StringUtils.hasText(client.getPublicKey())) {
+            throw new IllegalArgumentException("Public key is null");
+        }
+
+        if (!StringUtils.hasText(client.getPassword())) {
+            resetAndEncryptPassword(client, client.getPublicKey());
+            log.warn("Get password because it's empty");
+        }
+
+        if (!StringUtils.hasText(client.getClientSecret())) {
+            encryptClientSecret(client, client.getPublicKey());
+            log.warn("Get clientSecret from nam because it's empty");
+        }
     }
 
     public Optional<Client> deleteClient(Client client) {

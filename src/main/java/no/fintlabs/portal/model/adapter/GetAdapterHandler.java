@@ -8,6 +8,9 @@ import no.fintlabs.portal.model.FintCustomerObjectWithSecretsHandler;
 import no.fintlabs.portal.model.organisation.Organisation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -27,11 +30,21 @@ public class GetAdapterHandler extends FintCustomerObjectWithSecretsHandler<Adap
 
     @Override
     public Adapter apply(ConsumerRecord<String, AdapterEvent> consumerRecord, Organisation organisation) {
-        String adapterDn = consumerRecord.value().getObject().getDn();
-        return adapterService.getAdapterByDn(adapterDn)
-                .orElseGet(() -> {
-                    log.warn("Unable to find adapter: {}", adapterDn);
-                    return null;
-                });
+        Adapter request = consumerRecord.value().getObject();
+        Optional<Adapter> adapterOptional = adapterService.getAdapterByDn(request.getDn());
+
+        if (adapterOptional.isEmpty()) {
+            log.warn("Unable to find client: {}", request.getDn());
+            return null;
+        }
+
+        Adapter adapter = adapterOptional.get();
+
+        if (!StringUtils.hasText(adapter.getPublicKey())) {
+            adapter.setPublicKey(request.getPublicKey());
+        }
+
+        adapterService.checkPasswordAndClientSecret(adapter);
+        return adapter;
     }
 }

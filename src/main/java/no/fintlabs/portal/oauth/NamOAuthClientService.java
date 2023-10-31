@@ -110,7 +110,7 @@ public class NamOAuthClientService {
 
     private void sleep(int i) {
         try {
-            Thread.sleep(i * RETRY_SLEEP_MS);
+            Thread.sleep(i * i * RETRY_SLEEP_MS);
         } catch (InterruptedException ex) {
             log.debug("Usually doesn't happen", ex);
         }

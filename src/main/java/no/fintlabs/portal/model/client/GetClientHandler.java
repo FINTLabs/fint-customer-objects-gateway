@@ -8,6 +8,7 @@ import no.fintlabs.portal.model.FintCustomerObjectWithSecretsHandler;
 import no.fintlabs.portal.model.organisation.Organisation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
@@ -30,11 +31,21 @@ public class GetClientHandler extends FintCustomerObjectWithSecretsHandler<Clien
 
     @Override
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
-        String clientDn = consumerRecord.value().getObject().getDn();
-        return clientService.getClientByDn(clientDn)
-                .orElseGet(() -> {
-                    log.warn("Unable to find client: {}", clientDn);
-                    return null;
-                });
+        Client request = consumerRecord.value().getObject();
+        Optional<Client> clientOptional = clientService.getClientByDn(request.getDn());
+
+        if (clientOptional.isEmpty()) {
+            log.warn("Unable to find client: {}", request.getDn());
+            return null;
+        }
+
+        Client client = clientOptional.get();
+
+        if (!StringUtils.hasText(client.getPublicKey())) {
+            client.setPublicKey(request.getPublicKey());
+        }
+
+        clientService.checkPasswordAndClientSecret(client);
+        return client;
     }
 }

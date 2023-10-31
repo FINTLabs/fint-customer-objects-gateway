@@ -90,7 +90,7 @@ public class AdapterService implements FintCustomerObjectWithSecretsService<Adap
                     publicKeyString
             ));
         } catch (Exception e) {
-            log.error("Error when encrypting clientSecret" , e);
+            log.error("Error when encrypting clientSecret", e);
         }
 
         db.save(adapter);
@@ -101,7 +101,7 @@ public class AdapterService implements FintCustomerObjectWithSecretsService<Adap
         try {
             adapter.setPassword(secretService.encryptPassword(resetAdapterPassword(adapter), privateKeyString));
         } catch (Exception e) {
-            log.error("Error when encrypting password" , e);
+            log.error("Error when encrypting password", e);
         }
 
         db.save(adapter);
@@ -133,23 +133,14 @@ public class AdapterService implements FintCustomerObjectWithSecretsService<Adap
 
     public Optional<Adapter> updateAdapter(Adapter adapter) {
 
-        if (!StringUtils.hasText(adapter.getPassword()) && StringUtils.hasText(adapter.getPublicKey())) {
-            resetAndEncryptPassword(adapter, adapter.getPublicKey());
-            log.warn("Get password because it's empty");
-        }
-
-        if (!StringUtils.hasText(adapter.getClientSecret()) && StringUtils.hasText(adapter.getPublicKey())) {
-            encryptClientSecret(adapter, adapter.getPublicKey());
-            log.warn("Get clientSecret from nam because it's empty");
-        }
-
         if (ldapService.updateEntry(adapter)) {
             return getAdapterByDnFromLdap(adapter.getDn())
                     .map(updatedAdapter -> db.findById(LdapNameBuilder.newInstance(Objects.requireNonNull(updatedAdapter.getDn())).build())
                             .map(adapterFromDb -> {
                                 updatedAdapter.setClientSecret(adapterFromDb.getClientSecret());
                                 updatedAdapter.setPassword(adapterFromDb.getPassword());
-                                updatedAdapter.setPublicKey(adapterFromDb.getPublicKey());
+                                updatedAdapter.setPublicKey(StringUtils.hasText(adapterFromDb.getPublicKey()) ? adapterFromDb.getPublicKey() : adapter.getPublicKey());
+                                checkPasswordAndClientSecret(updatedAdapter);
                                 db.save(updatedAdapter);
 
                                 return updatedAdapter;
@@ -157,6 +148,23 @@ public class AdapterService implements FintCustomerObjectWithSecretsService<Adap
                             .orElseGet(() -> db.save(updatedAdapter)));
         }
         return Optional.empty();
+    }
+
+    public void checkPasswordAndClientSecret(Adapter adapter) {
+
+        if (!StringUtils.hasText(adapter.getPublicKey())) {
+            throw new IllegalArgumentException("Public key is null");
+        }
+
+        if (!StringUtils.hasText(adapter.getPassword())) {
+            resetAndEncryptPassword(adapter, adapter.getPublicKey());
+            log.warn("Get password because it's empty");
+        }
+
+        if (!StringUtils.hasText(adapter.getClientSecret())) {
+            encryptClientSecret(adapter, adapter.getPublicKey());
+            log.warn("Get clientSecret from nam because it's empty");
+        }
     }
 
     public Optional<Adapter> deleteAdapter(Adapter adapter) {

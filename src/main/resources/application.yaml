@@ -18,6 +18,12 @@ spring:
     include:
       - db
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health
+
 logging:
   level:
     org.apache.kafka: WARN

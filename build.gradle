@@ -60,6 +60,7 @@ dependencies {
     implementation 'no.fintlabs:fint-kafka:2.3.0'
 
     compileOnly 'org.projectlombok:lombok'
+    implementation 'io.micrometer:micrometer-core'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok'

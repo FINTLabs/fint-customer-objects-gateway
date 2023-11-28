@@ -21,4 +21,8 @@ spec:
     requests:
       memory: 512Mi
       cpu: 250m
+  prometheus:
+    enabled: true
+    port: '8080'
+    path: /actuator/prometheus
 

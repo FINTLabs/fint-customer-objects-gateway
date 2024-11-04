@@ -8,6 +8,7 @@ import no.fintlabs.portal.model.FintCustomerObjectWithSecretsHandler;
 import no.fintlabs.portal.model.component.Component;
 import no.fintlabs.portal.model.component.ComponentService;
 import no.fintlabs.portal.model.organisation.Organisation;
+import no.fintlabs.portal.utilities.MetricService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 @Slf4j
@@ -19,13 +20,16 @@ public class CreateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
 
     private final ComponentService componentService;
 
+    private final MetricService metricService;
+
 
     protected CreateClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory,
                                   ClientService clientService, ClientFactory clientFactory,
-                                  ComponentService componentService) {
+                                  ComponentService componentService, MetricService metricService) {
         super(entityTopicService, entityProducerFactory, Client.class, clientService);
         this.clientFactory = clientFactory;
         this.componentService = componentService;
+        this.metricService = metricService;
     }
 
 
@@ -38,6 +42,7 @@ public class CreateClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
     public Client apply(ConsumerRecord<String, ClientEvent> consumerRecord, Organisation organisation) {
         Client client = getOrCreateClient(consumerRecord, organisation);
         send(client);
+        metricService.registerClientCreate();
 
         return client;
     }

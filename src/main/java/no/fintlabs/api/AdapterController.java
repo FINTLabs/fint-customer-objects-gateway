@@ -1,4 +1,4 @@
-package no.fintlabs.test;
+package no.fintlabs.api;
 
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.portal.model.adapter.Adapter;
@@ -18,31 +18,27 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Optional;
 
-@ConditionalOnProperty(prefix = "fint.customer-object-gateway", name = "mode", havingValue = "test")
 @RestController
 @RequestMapping("adapter")
-public class TestAdapterController {
+public class AdapterController {
 
     private final SecretService secretService;
-    private final PrivateKey privateKey;
-    private final String publicKey;
+    private final EncryptionKeyPair encryptionKeyPair;
 
 
     private final AdapterDBRepository adapterDBRepository;
 
     private final AdapterEventRequestProducerService requestProducerService;
 
-    public TestAdapterController(SecretService secretService, AdapterDBRepository adapterDBRepository, AdapterEventRequestProducerService requestProducerService) throws NoSuchAlgorithmException {
+    public AdapterController(
+            SecretService secretService,
+            AdapterDBRepository adapterDBRepository,
+            AdapterEventRequestProducerService requestProducerService,
+            EncryptionKeyPair encryptionKeyPair) throws NoSuchAlgorithmException {
         this.secretService = secretService;
         this.adapterDBRepository = adapterDBRepository;
         this.requestProducerService = requestProducerService;
-
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-        generator.initialize(2048);
-        KeyPair pair = generator.generateKeyPair();
-        privateKey = pair.getPrivate();
-        publicKey = Base64.getEncoder().encodeToString((pair.getPublic().getEncoded()));
-
+        this.encryptionKeyPair = encryptionKeyPair;
     }
 
     @GetMapping("{dn}")
@@ -50,7 +46,7 @@ public class TestAdapterController {
 
         Adapter adapter = new Adapter();
         adapter.setDn(dn);
-        adapter.setPublicKey(publicKey);
+        adapter.setPublicKey(encryptionKeyPair.getPublicKey());
 
         return requestProducerService
                 .get(new AdapterEvent(adapter, "fintlabs.no", FintCustomerObjectEvent.Operation.READ))
@@ -67,7 +63,7 @@ public class TestAdapterController {
     @PostMapping()
     public ResponseEntity<AdapterEvent> generateCreateAdapterEvent(@RequestBody AdapterEvent adapterEvent) {
         adapterEvent.setOperation(FintCustomerObjectEvent.Operation.CREATE);
-        adapterEvent.getObject().setPublicKey(publicKey);
+        adapterEvent.getObject().setPublicKey(encryptionKeyPair.getPublicKey());
         Optional<AdapterEvent> adapterEventResponse = requestProducerService.get(adapterEvent);
 
         return adapterEventResponse
@@ -84,7 +80,7 @@ public class TestAdapterController {
     public ResponseEntity<AdapterEvent> generateUpdateAdapterEvent(@RequestBody AdapterEvent adapterEvent) {
 
         adapterEvent.setOperation(FintCustomerObjectEvent.Operation.UPDATE);
-        adapterEvent.getObject().setPublicKey(publicKey);
+        adapterEvent.getObject().setPublicKey(encryptionKeyPair.getPublicKey());
         return requestProducerService
                 .get(adapterEvent)
                 .map(ae -> {
@@ -129,8 +125,8 @@ public class TestAdapterController {
     @PostMapping("decrypt")
     public ResponseEntity<Adapter> decryptAdapter(@RequestBody AdapterEvent adapterEvent) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 
-        adapterEvent.getObject().setClientSecret(secretService.decrypt(privateKey, adapterEvent.getObject().getClientSecret()));
-        adapterEvent.getObject().setPassword(secretService.decrypt(privateKey, adapterEvent.getObject().getPassword()));
+        adapterEvent.getObject().setClientSecret(secretService.decrypt(encryptionKeyPair.getPrivateKey(), adapterEvent.getObject().getClientSecret()));
+        adapterEvent.getObject().setPassword(secretService.decrypt(encryptionKeyPair.getPrivateKey(), adapterEvent.getObject().getPassword()));
 
         return ResponseEntity.ok(adapterEvent.getObject());
     }

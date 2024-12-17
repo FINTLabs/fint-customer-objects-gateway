@@ -1,4 +1,4 @@
-package no.fintlabs.test;
+package no.fintlabs.api;
 
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.portal.model.client.Client;
@@ -16,17 +16,14 @@ import javax.crypto.NoSuchPaddingException;
 import java.security.*;
 import java.util.Base64;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 
-@ConditionalOnProperty(prefix = "fint.customer-object-gateway", name = "mode", havingValue = "test")
 @RestController
 @RequestMapping("client")
-public class TestClientController {
+public class ClientController {
 
     private final SecretService secretService;
-    private final PrivateKey privateKey;
-    private final String publicKey;
+    private final EncryptionKeyPair encryptionKeyPair;
 
 
     private final ClientDBRepository clientDBRepository;
@@ -35,17 +32,15 @@ public class TestClientController {
 
     private final ClientEventRequestProducerService requestProducerService;
 
-    public TestClientController(SecretService secretService,  ClientDBRepository clientDBRepository, ClientEventRequestProducerService requestProducerService) throws NoSuchAlgorithmException {
+    public ClientController(
+            SecretService secretService,
+            ClientDBRepository clientDBRepository,
+            ClientEventRequestProducerService requestProducerService,
+            EncryptionKeyPair encryptionKeyPair) throws NoSuchAlgorithmException {
         this.secretService = secretService;
         this.clientDBRepository = clientDBRepository;
         this.requestProducerService = requestProducerService;
-
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-        generator.initialize(2048);
-        KeyPair pair = generator.generateKeyPair();
-        privateKey = pair.getPrivate();
-        publicKey = Base64.getEncoder().encodeToString((pair.getPublic().getEncoded()));
-
+        this.encryptionKeyPair = encryptionKeyPair;
     }
 
     @GetMapping("{dn}")
@@ -54,7 +49,7 @@ public class TestClientController {
 
         Client client = new Client();
         client.setDn(dn);
-        client.setPublicKey(publicKey);
+        client.setPublicKey(encryptionKeyPair.getPublicKey());
 
         return requestProducerService
                 .get(new ClientEvent(client, "fintlabs.no", FintCustomerObjectEvent.Operation.READ))
@@ -72,7 +67,7 @@ public class TestClientController {
     public ResponseEntity<ClientEvent> generateCreateClientEvent(@RequestBody ClientEvent clientEvent) {
 
         clientEvent.setOperation(FintCustomerObjectEvent.Operation.CREATE);
-        clientEvent.getObject().setPublicKey(publicKey);
+        clientEvent.getObject().setPublicKey(encryptionKeyPair.getPublicKey());
         Optional<ClientEvent> clientEventResponse = requestProducerService.get(clientEvent);
 
         return clientEventResponse
@@ -90,7 +85,7 @@ public class TestClientController {
     public ResponseEntity<ClientEvent> generateUpdateClientEvent(@RequestBody ClientEvent clientEvent) {
 
         clientEvent.setOperation(FintCustomerObjectEvent.Operation.UPDATE);
-        clientEvent.getObject().setPublicKey(publicKey);
+        clientEvent.getObject().setPublicKey(encryptionKeyPair.getPublicKey());
         return requestProducerService
                 .get(clientEvent)
                 .map(ce -> {
@@ -135,8 +130,8 @@ public class TestClientController {
     @PostMapping("decrypt")
     public ResponseEntity<Client> decryptClient(@RequestBody ClientEvent clientEvent) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 
-        clientEvent.getObject().setClientSecret(secretService.decrypt(privateKey, clientEvent.getObject().getClientSecret()));
-        clientEvent.getObject().setPassword(secretService.decrypt(privateKey, clientEvent.getObject().getPassword()));
+        clientEvent.getObject().setClientSecret(secretService.decrypt(encryptionKeyPair.getPrivateKey(), clientEvent.getObject().getClientSecret()));
+        clientEvent.getObject().setPassword(secretService.decrypt(encryptionKeyPair.getPrivateKey(), clientEvent.getObject().getPassword()));
 
         return ResponseEntity.ok(clientEvent.getObject());
 

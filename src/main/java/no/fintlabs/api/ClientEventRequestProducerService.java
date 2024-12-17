@@ -1,4 +1,5 @@
-package no.fintlabs.test;
+package no.fintlabs.api;
+
 
 import no.fintlabs.kafka.common.topic.TopicCleanupPolicyParameters;
 import no.fintlabs.kafka.requestreply.RequestProducer;
@@ -8,7 +9,7 @@ import no.fintlabs.kafka.requestreply.RequestProducerRecord;
 import no.fintlabs.kafka.requestreply.topic.ReplyTopicNameParameters;
 import no.fintlabs.kafka.requestreply.topic.ReplyTopicService;
 import no.fintlabs.kafka.requestreply.topic.RequestTopicNameParameters;
-import no.fintlabs.portal.model.adapter.AdapterEvent;
+import no.fintlabs.portal.model.client.ClientEvent;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,11 +18,13 @@ import java.time.Duration;
 import java.util.Optional;
 
 @Service
-public class AdapterEventRequestProducerService {
-    private final RequestTopicNameParameters requestTopicNameParameters;
-    private final RequestProducer<AdapterEvent, AdapterEvent> requestProducer;
+public class ClientEventRequestProducerService {
 
-    public AdapterEventRequestProducerService(
+    private final RequestTopicNameParameters requestTopicNameParameters;
+
+    private final RequestProducer<ClientEvent, ClientEvent> requestProducer;
+
+    public ClientEventRequestProducerService(
             @Value("${fint.application-id}") String applicationId,
             RequestProducerFactory requestProducerFactory,
             ReplyTopicService replyTopicService
@@ -29,20 +32,21 @@ public class AdapterEventRequestProducerService {
         ReplyTopicNameParameters replyTopicNameParameters = ReplyTopicNameParameters.builder()
                 .applicationId(applicationId)
                 .domainContext("fint-customer-objects")
-                .resource("adapter")
+                .resource("client")
                 .build();
 
         replyTopicService.ensureTopic(replyTopicNameParameters, 0, TopicCleanupPolicyParameters.builder().build());
 
         this.requestTopicNameParameters = RequestTopicNameParameters.builder()
                 .domainContext("fint-customer-objects")
-                .resource("adapter")
+                .resource("client")
+                //.parameterName("client")
                 .build();
 
         this.requestProducer = requestProducerFactory.createProducer(
                 replyTopicNameParameters,
-                AdapterEvent.class,
-                AdapterEvent.class,
+                ClientEvent.class,
+                ClientEvent.class,
                 RequestProducerConfiguration
                         .builder()
                         .defaultReplyTimeout(Duration.ofMinutes(2))
@@ -50,11 +54,11 @@ public class AdapterEventRequestProducerService {
         );
     }
 
-    public Optional<AdapterEvent> get(AdapterEvent adapterEvent) {
+    public Optional<ClientEvent> get(ClientEvent clientEvent) {
         return requestProducer.requestAndReceive(
-                        RequestProducerRecord.<AdapterEvent>builder()
+                        RequestProducerRecord.<ClientEvent>builder()
                                 .topicNameParameters(requestTopicNameParameters)
-                                .value(adapterEvent)
+                                .value(clientEvent)
                                 .build()
                 )
                 .map(ConsumerRecord::value);

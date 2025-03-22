@@ -6,16 +6,19 @@ import no.fintlabs.kafka.entity.topic.EntityTopicService;
 import no.fintlabs.portal.model.FintCustomerObjectEvent;
 import no.fintlabs.portal.model.FintCustomerObjectWithSecretsHandler;
 import no.fintlabs.portal.model.organisation.Organisation;
+import no.fintlabs.portal.utilities.MetricService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 public class DeleteClientHandler extends FintCustomerObjectWithSecretsHandler<Client, ClientEvent, ClientService> {
+    private final MetricService metricService;
 
     protected DeleteClientHandler(EntityTopicService entityTopicService, EntityProducerFactory entityProducerFactory,
-                                  ClientService clientService) {
+                                  ClientService clientService, MetricService metricService) {
         super(entityTopicService, entityProducerFactory, Client.class, clientService);
+        this.metricService = metricService;
     }
 
     @Override
@@ -31,6 +34,7 @@ public class DeleteClientHandler extends FintCustomerObjectWithSecretsHandler<Cl
                 .orElseThrow(() -> new RuntimeException("Unable to find client with dn: " + consumerRecord.value().getObject().getDn()));
 
         sendDelete(client.getDn());
+        metricService.registerClientDelete();
 
         return client;
     }

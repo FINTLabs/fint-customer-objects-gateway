@@ -153,17 +153,17 @@ public class AdapterService implements FintCustomerObjectWithSecretsService<Adap
     public void checkPasswordAndClientSecret(Adapter adapter) {
 
         if (!StringUtils.hasText(adapter.getPublicKey())) {
-            throw new IllegalArgumentException("Public key is null");
+            throw new IllegalArgumentException("Public key is null (" + adapter.getName() + ")");
         }
 
         if (!StringUtils.hasText(adapter.getPassword())) {
             resetAndEncryptPassword(adapter, adapter.getPublicKey());
-            log.warn("Get password because it's empty");
+            log.warn("Get password because it's empty ({})", adapter.getName());
         }
 
         if (!StringUtils.hasText(adapter.getClientSecret())) {
             encryptClientSecret(adapter, adapter.getPublicKey());
-            log.warn("Get clientSecret from nam because it's empty");
+            log.warn("Get clientSecret from nam because it's empty ({})", adapter.getName());
         }
     }
 

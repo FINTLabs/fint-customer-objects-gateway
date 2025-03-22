@@ -162,17 +162,17 @@ public class ClientService
     public void checkPasswordAndClientSecret(Client client) {
 
         if (!StringUtils.hasText(client.getPublicKey())) {
-            throw new IllegalArgumentException("Public key is null");
+            throw new IllegalArgumentException("Public key is null (" + client.getName() + ")");
         }
 
         if (!StringUtils.hasText(client.getPassword())) {
             resetAndEncryptPassword(client, client.getPublicKey());
-            log.warn("Get password because it's empty");
+            log.warn("Get password because it's empty ({})", client.getName());
         }
 
         if (!StringUtils.hasText(client.getClientSecret())) {
             encryptClientSecret(client, client.getPublicKey());
-            log.warn("Get clientSecret from nam because it's empty");
+            log.warn("Get clientSecret from nam because it's empty ({})", client.getName());
         }
     }
 

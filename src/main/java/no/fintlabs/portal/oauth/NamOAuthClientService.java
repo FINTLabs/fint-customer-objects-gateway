@@ -29,6 +29,8 @@ public class NamOAuthClientService {
     @Value("${fint.nam.oauth.password}")
     private String password;
     @Value("${fint.nam.oauth.idp-hostname}")
+    private String oauthIdpHostname;
+    @Value("${fint.nam.idp-hostname}")
     private String idpHostname;
     @Value("${fint.nam.oauth.clientId}")
     private String clientId;
@@ -43,7 +45,7 @@ public class NamOAuthClientService {
         ResourceOwnerPasswordResourceDetails resourceDetails = new ResourceOwnerPasswordResourceDetails();
         resourceDetails.setUsername(username);
         resourceDetails.setPassword(password);
-        resourceDetails.setAccessTokenUri(String.format(NamOAuthConstants.ACCESS_TOKEN_URL_TEMPLATE, idpHostname));
+        resourceDetails.setAccessTokenUri(String.format(NamOAuthConstants.ACCESS_TOKEN_URL_TEMPLATE, oauthIdpHostname));
         resourceDetails.setClientId(clientId);
         resourceDetails.setClientSecret(clientSecret);
         resourceDetails.setGrantType(NamOAuthConstants.PASSWORD_GRANT_TYPE);

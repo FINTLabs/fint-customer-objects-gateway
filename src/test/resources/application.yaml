@@ -16,6 +16,7 @@ fint:
     access:
       template-base: "ou=access,o=fint-test"
   nam:
+    idp-hostname: "dummy"
     oauth:
       username: "dummy"
       password: "dummy"

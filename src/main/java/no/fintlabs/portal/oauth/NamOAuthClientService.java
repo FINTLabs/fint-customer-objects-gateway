@@ -71,7 +71,8 @@ public class NamOAuthClientService {
         HttpEntity<String> request = new HttpEntity<>(jsonOAuthClient, headers);
 
         try {
-            String response = restTemplate.postForObject(NamOAuthConstants.CLIENT_REGISTRATION_URL_TEMPLATE, request, String.class, idpHostname);
+            var url = String.format(NamOAuthConstants.CLIENT_REGISTRATION_URL_TEMPLATE, idpHostname);
+            String response = restTemplate.postForObject(url, request, String.class);
             OAuthClient client = mapper.readValue(response, OAuthClient.class);
             log.info("Client ID {} created.", client.getClientId());
             return client;
@@ -84,7 +85,8 @@ public class NamOAuthClientService {
     public void removeOAuthClient(String clientId) {
         log.info("Deleting client {}...", clientId);
         try {
-            restTemplate.delete(NamOAuthConstants.CLIENT_URL_TEMPLATE, idpHostname, clientId);
+            var url  = String.format(NamOAuthConstants.CLIENT_REGISTRATION_URL_TEMPLATE, idpHostname);
+            restTemplate.delete(url, clientId);
         } catch (Exception e) {
             log.error("Unable to delete client {}", clientId, e);
             throw e;
@@ -95,7 +97,8 @@ public class NamOAuthClientService {
         log.info("Fetching client {}...", clientId);
         for (int i = 1; true; i++) {
             try {
-                return restTemplate.getForObject(NamOAuthConstants.CLIENT_URL_TEMPLATE, OAuthClient.class, idpHostname, clientId);
+                var url = String.format(NamOAuthConstants.CLIENT_URL_TEMPLATE, idpHostname);
+                return restTemplate.getForObject(url, OAuthClient.class, clientId);
             } catch (Exception e) {
                 log.warn("Unable to get client {}, this was iteration number {}", clientId, i);
                 log.warn("Error, will retry: " + e.getMessage());

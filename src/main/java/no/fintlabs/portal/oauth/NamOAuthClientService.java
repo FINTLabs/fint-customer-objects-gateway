@@ -85,7 +85,7 @@ public class NamOAuthClientService {
     public void removeOAuthClient(String clientId) {
         log.info("Deleting client {}...", clientId);
         try {
-            var url  = String.format(NamOAuthConstants.CLIENT_REGISTRATION_URL_TEMPLATE, idpHostname);
+            var url  = String.format(NamOAuthConstants.CLIENT_URL_TEMPLATE, idpHostname);
             restTemplate.delete(url, clientId);
         } catch (Exception e) {
             log.error("Unable to delete client {}", clientId, e);

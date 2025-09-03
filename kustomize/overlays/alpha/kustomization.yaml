@@ -1,12 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+namespace: flais-io
 resources:
   - ../../base
-patches:
-  - patch: |-
-      - op: replace
-        path: "/spec/onePassword/itemPath"
-        value: "vaults/aks-alpha-vault/items/fint-customer-objects-gateway"
-    target:
-      kind: Application
-      name: fint-customer-objects-gateway
+  - onepassword.yaml

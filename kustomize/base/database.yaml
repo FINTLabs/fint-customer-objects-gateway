@@ -1,0 +1,13 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: PGUser
+metadata:
+  labels:
+    app: fint-customer-objects-gateway
+    app.kubernetes.io/name: fint-customer-objects-gateway
+    app.kubernetes.io/part-of: fintlabs-application-infrastructure-services
+    fintlabs.no/org-id: flais.io
+    fintlabs.no/team: flais
+  name: fint-customer-objects-gateway-db
+  namespace: flais-io
+spec:
+  database: flais

@@ -1,0 +1,15 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: KafkaUserAndAcl
+metadata:
+  labels:
+    app: fint-customer-objects-gateway
+    app.kubernetes.io/name: fint-customer-objects-gateway
+    app.kubernetes.io/part-of: fintlabs-application-infrastructure-services
+    fintlabs.no/org-id: flais.io
+    fintlabs.no/team: flais
+  name: fint-customer-objects-gateway
+  namespace: flais-io
+spec:
+  acls:
+    - permission: admin
+      topic: flais-io.fint-customer-objects.*

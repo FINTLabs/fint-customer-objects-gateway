@@ -1,13 +1,20 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - flais.yaml
-commonLabels:
-  app.kubernetes.io/name: fint-customer-objects-gateway
-  app.kubernetes.io/instance: fint-customer-objects-gateway
-  app.kubernetes.io/version: "latest"
-  app.kubernetes.io/managed-by: GA
-  app.kubernetes.io/component: operator
-  app.kubernetes.io/part-of: fintlabs-application-infrastructure-services
-  fintlabs.no/team: flais
-  fintlabs.no/org-id: flais.io
+  - deployment.yaml
+  - database.yaml
+  - kafka.yaml
+  - service.yaml
+labels:
+  - includeSelectors: true
+    pairs:
+      app: fint-customer-objects-gateway
+  - includeSelectors: false
+    pairs:
+      app.kubernetes.io/name: fint-customer-objects-gateway
+      app.kubernetes.io/instance: fint-customer-objects-gateway
+      app.kubernetes.io/component: flais-systems
+      app.kubernetes.io/version: latest
+      app.kubernetes.io/part-of: fintlabs-application-infrastructure-services
+      fintlabs.no/team: flais
+      fintlabs.no/org-id: flais.io

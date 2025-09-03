@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fint-customer-objects-gateway
+    app.kubernetes.io/name: fint-customer-objects-gateway
+    app.kubernetes.io/part-of: fintlabs-application-infrastructure-services
+    fintlabs.no/team: flais
+  name: fint-customer-objects-gateway
+  namespace: flais-io
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fint-customer-objects-gateway
+  template:
+    metadata:
+      labels:
+        app: fint-customer-objects-gateway
+        app.kubernetes.io/name: fint-customer-objects-gateway
+        app.kubernetes.io/part-of: fintlabs-application-infrastructure-services
+        fintlabs.no/team: flais
+    spec:
+      containers:
+        - image: ghcr.io/fintlabs/fint-customer-objects-gateway:sha-718305f
+          name: fint-customer-objects-gateway
+          env:
+            - name: fint.org-id
+              value: flais.io
+            - name: TZ
+              value: Europe/Oslo
+          envFrom:
+            - secretRef:
+                name: fint-customer-objects-gateway-op
+            - secretRef:
+                name: fint-customer-objects-gateway-db
+            - secretRef:
+                name: fint-customer-objects-gateway-kafka
+          volumeMounts:
+            - mountPath: /credentials
+              name: credentials
+              readOnly: true
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+      volumes:
+        - name: credentials
+          secret:
+            defaultMode: 420
+            secretName: fint-customer-objects-gateway-kafka-certificates

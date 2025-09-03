@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fint-customer-objects-gateway
+  labels:
+    app: fint-customer-objects-gateway
+    app.kubernetes.io/name: fint-customer-objects-gateway
+    app.kubernetes.io/part-of: fintlabs-application-infrastructure-services
+    fintlabs.no/team: flais
+spec:
+  ports:
+    - port: 8080
+  type: ClusterIP
+  selector:
+    app: fint-customer-objects-gateway

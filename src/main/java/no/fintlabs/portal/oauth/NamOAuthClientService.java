@@ -68,6 +68,7 @@ public class NamOAuthClientService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             request = new HttpEntity<>(mapper.writeValueAsString(new OAuthClient(name)), headers);
         } catch (JsonProcessingException e) {
+            log.error("Unable to serialize OAuth client request for {}", name, e);
             throw new IllegalStateException("Unable to serialize OAuth client request", e);
         }
 
@@ -81,8 +82,10 @@ public class NamOAuthClientService {
             if (clientAlreadyExists(e)) {
                 return getOAuthClientByName(name);
             }
+            log.error("Unable to create client {}", name, e);
             throw e;
         } catch (JsonProcessingException e) {
+            log.error("Unable to deserialize OAuth client creation response for {}", name, e);
             throw new IllegalStateException("Unable to deserialize OAuth client creation response", e);
         } catch (Exception e) {
             log.error("Unable to create client {}", name, e);
@@ -108,14 +111,12 @@ public class NamOAuthClientService {
                 var url = String.format(NamOAuthConstants.CLIENT_URL_TEMPLATE, idpHostname);
                 return restTemplate.getForObject(url, OAuthClient.class, clientId);
             } catch (Exception e) {
-                log.warn("Unable to get client {}, this was iteration number {}", clientId, i);
-                log.warn("Error, will retry: " + e.getMessage());
-
                 if (i == RETRY_ATTEMPTS) {
-                    log.error("Failed to getOauthClient after max retry attempts. Giving up", e);
+                    log.error("Unable to get client {} after {} attempts", clientId, RETRY_ATTEMPTS, e);
                     throw e;
                 }
 
+                log.warn("Unable to get client {} on attempt {} of {}, retrying", clientId, i, RETRY_ATTEMPTS, e);
                 sleep(i);
             }
         }
@@ -136,6 +137,9 @@ public class NamOAuthClientService {
                     .orElseThrow(() -> new ObjectNotFoundException(
                             String.format("OAuth client with name '%s' was not found", name)
                     ));
+        } catch (ObjectNotFoundException e) {
+            log.error("Unable to get client by name {}", name, e);
+            throw e;
         } catch (Exception e) {
             log.error("Unable to get client by name {}", name, e);
             throw new RuntimeException(e);

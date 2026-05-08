@@ -127,7 +127,7 @@ public class NamOAuthClientService {
         try {
             var url = String.format(NamOAuthConstants.CLIENT_LIST_URL_TEMPLATE, idpHostname);
             String response = restTemplate.getForObject(url, String.class);
-            List<OAuthClient> clients = mapper.readValue(response, new TypeReference<>() {
+            List<OAuthClient> clients = mapper.readValue(response, new TypeReference<List<OAuthClient>>() {
             });
 
             return clients.stream()

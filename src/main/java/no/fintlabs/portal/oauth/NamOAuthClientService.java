@@ -1,8 +1,10 @@
 package no.fintlabs.portal.oauth;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import no.fintlabs.portal.exceptions.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -10,11 +12,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.token.grant.password.ResourceOwnerPasswordResourceDetails;
+import org.springframework.security.oauth2.common.exceptions.InvalidClientException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -56,19 +61,15 @@ public class NamOAuthClientService {
 
     public OAuthClient addOAuthClient(String name) {
         log.info("Adding client {}...", name);
-        OAuthClient oAuthClient = new OAuthClient(name);
-        String jsonOAuthClient = null;
+        HttpEntity<String> request;
 
         try {
-            jsonOAuthClient = mapper.writeValueAsString(oAuthClient);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            request = new HttpEntity<>(mapper.writeValueAsString(new OAuthClient(name)), headers);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Unable to serialize OAuth client request", e);
         }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<String> request = new HttpEntity<>(jsonOAuthClient, headers);
 
         try {
             var url = String.format(NamOAuthConstants.CLIENT_REGISTRATION_URL_TEMPLATE, idpHostname);
@@ -76,6 +77,13 @@ public class NamOAuthClientService {
             OAuthClient client = mapper.readValue(response, OAuthClient.class);
             log.info("Client ID {} created.", client.getClientId());
             return client;
+        } catch (InvalidClientException e) {
+            if (clientAlreadyExists(e)) {
+                return getOauthClientByName(name);
+            }
+            throw e;
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Unable to deserialize OAuth client creation response", e);
         } catch (Exception e) {
             log.error("Unable to create client {}", name, e);
             throw new RuntimeException(e);
@@ -113,11 +121,38 @@ public class NamOAuthClientService {
         }
     }
 
+    public OAuthClient getOauthClientByName(String name) {
+        log.info("Fetching client by name {}...", name);
+
+        try {
+            var url = String.format(NamOAuthConstants.CLIENT_LIST_URL_TEMPLATE, idpHostname);
+            String response = restTemplate.getForObject(url, String.class);
+            List<OAuthClient> clients = mapper.readValue(response, new TypeReference<>() {
+            });
+
+            return clients.stream()
+                    .filter(client -> Objects.equals(name, client.getClientName()))
+                    .findFirst()
+                    .orElseThrow(() -> new ObjectNotFoundException(
+                            String.format("OAuth client with name '%s' was not found", name)
+                    ));
+        } catch (ObjectNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unable to get client by name {}", name, e);
+            throw new RuntimeException(e);
+        }
+    }
+
     private void sleep(int i) {
         try {
             Thread.sleep(i * i * RETRY_SLEEP_MS);
         } catch (InterruptedException ex) {
             log.debug("Usually doesn't happen", ex);
         }
+    }
+
+    private boolean clientAlreadyExists(InvalidClientException e) {
+        return e.getMessage() != null && e.getMessage().startsWith("The client already exists");
     }
 }

@@ -11,6 +11,7 @@ public class NamOAuthConstants {
     public static final String PASSWORD_GRANT_TYPE = "password";
     public static final String ACCESS_TOKEN_URL_TEMPLATE = "https://%s//nidp/oauth/nam/token";
     public static final String CLIENT_REGISTRATION_URL_TEMPLATE = "http://%s/nidp/oauth/nam/clients/";
+    public static final String CLIENT_LIST_URL_TEMPLATE = "http://%s/nidp/oauth/nam/clients";
     public static final String CLIENT_URL_TEMPLATE = "http://%s/nidp/oauth/nam/clients/{clientId}";
     public static final String APPLICATION_TYPE = "web";
 

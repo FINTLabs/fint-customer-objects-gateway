@@ -79,7 +79,7 @@ public class NamOAuthClientService {
             return client;
         } catch (InvalidClientException e) {
             if (clientAlreadyExists(e)) {
-                return getOauthClientByName(name);
+                return getOAuthClientByName(name);
             }
             throw e;
         } catch (JsonProcessingException e) {
@@ -121,7 +121,7 @@ public class NamOAuthClientService {
         }
     }
 
-    public OAuthClient getOauthClientByName(String name) {
+    public OAuthClient getOAuthClientByName(String name) {
         log.info("Fetching client by name {}...", name);
 
         try {

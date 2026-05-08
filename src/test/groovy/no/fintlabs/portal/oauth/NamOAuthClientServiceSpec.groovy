@@ -34,7 +34,7 @@ class NamOAuthClientServiceSpec extends Specification {
     def "Get OAuth Client By Name"() {
 
         when:
-        def client = namOAuthClientService.getOauthClientByName("target-client")
+        def client = namOAuthClientService.getOAuthClientByName("target-client")
 
         then:
         1 * restTemplate.getForObject(_ as String, String.class) >> """[
@@ -50,7 +50,7 @@ class NamOAuthClientServiceSpec extends Specification {
     def "Get OAuth Client By Name throws when client is missing"() {
 
         when:
-        namOAuthClientService.getOauthClientByName("missing-client")
+        namOAuthClientService.getOAuthClientByName("missing-client")
 
         then:
         1 * restTemplate.getForObject(_ as String, String.class) >> """[

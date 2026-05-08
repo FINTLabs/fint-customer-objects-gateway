@@ -136,8 +136,6 @@ public class NamOAuthClientService {
                     .orElseThrow(() -> new ObjectNotFoundException(
                             String.format("OAuth client with name '%s' was not found", name)
                     ));
-        } catch (ObjectNotFoundException e) {
-            throw e;
         } catch (Exception e) {
             log.error("Unable to get client by name {}", name, e);
             throw new RuntimeException(e);
